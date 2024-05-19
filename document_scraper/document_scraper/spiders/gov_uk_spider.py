@@ -1,13 +1,13 @@
 import os
 import scrapy
-import pdfkit
+import win32print
 
 class GovUKSpider(scrapy.Spider):
     name = 'gov_uk_spider'
     allowed_domains = ['www.gov.uk']
     start_urls = [
         'https://www.gov.uk/topic/business-tax/import-export',
-        # Add more GOV.UK URLs related to import-export regulations
+        # Add more GOV.UK URLs related to import-export regulations here
     ]
 
     def parse(self, response):
@@ -18,32 +18,15 @@ class GovUKSpider(scrapy.Spider):
         # Create the directory if it doesn't exist
         os.makedirs('gov_uk_pdfs', exist_ok=True)
 
-        # Configure pdfkit options
-        options = {
-            'page-size': 'A4',
-            'margin-top': '0.75in',
-            'margin-right': '0.75in',
-            'margin-bottom': '0.75in',
-            'margin-left': '0.75in',
-            'encoding': "UTF-8",
-            'custom-header': [
-                ('Accept-Encoding', 'gzip')
-            ],
-            'cookie': [
-                ('cookie-name1', 'cookie-value1'),
-                ('cookie-name2', 'cookie-value2'),
-            ],
-            'no-outline': None
-        }
+        # Find the "Microsoft Print to PDF" printer
+        for printer in win32print.EnumPrinters(win32print.PRINTER_ENUM_LOCAL):
+            if "Microsoft Print to PDF" in printer[2]:
+                pdf_printer = printer[2]
+                break
 
-        # Save the webpage as a PDF using pdfkit
-        pdfkit.from_url(response.url, filename, options=options)
+        # Print the webpage HTML to PDF using the "Microsoft Print to PDF" printer
+        job_id = win32print.StartDocPrinter(pdf_printer, 1, (response.text, None, "RAW"))
+        win32print.WritePrinter(job_id, response.text.encode())
+        win32print.EndDocPrinter(job_id)
 
-        self.log(f"Saved PDF: {filename}")
-
-        # Follow links to other pages
-        for link in response.css('a::attr(href)').getall():
-            if link.startswith('/'):
-                # Construct the absolute URL
-                url = response.urljoin(link)
-                yield scrapy.Request(url, callback=self.parse)
+        self.log(f'Saved PDF: {filename}')
