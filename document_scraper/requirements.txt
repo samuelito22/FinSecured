@@ -1,4 +1,0 @@
-itemadapter==0.9.0
-pdfkit==1.0.0
-scrapy==2.11.2
-pyopenssl==24.0.0
