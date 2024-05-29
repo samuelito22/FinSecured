@@ -1,5 +1,0 @@
-boto3==1.34.108
-itemadapter==0.9.0
-itemadapter==0.4.0
-python-dotenv==1.0.1
-selenium==4.21.0

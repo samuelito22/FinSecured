@@ -1,7 +1,5 @@
-import logging
 import requests
 import os
-
 
 def send_email_alert(subject, message):
     """
@@ -27,4 +25,4 @@ def send_email_alert(subject, message):
 
     response = requests.post(url, headers=headers, json=data)
     if response.status_code != 202:
-        logging.error(f"Failed to send email alert. Status code: {response.status_code}")
+        print(f"Failed to send email alert. Status code: {response.status_code}")
