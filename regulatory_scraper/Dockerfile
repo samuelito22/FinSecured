@@ -1,27 +1,55 @@
-FROM ubuntu
+# Use Ubuntu 24.04 as the base image
+FROM ubuntu:24.04
 
-# Install dependencies
-RUN apt-get update && \
-    apt-get install -y python3-scrapy python3-pip cron
+# Update and install Python, pip, and necessary libraries
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-dev \
+    python3-pip \
+    libxml2-dev \
+    libxslt1-dev \
+    zlib1g-dev \
+    libffi-dev \
+    libssl-dev \
+    libpq-dev \
+    wkhtmltopdf \
+    python3-venv \  
+    libpango-1.0-0 \
+    libharfbuzz0b \
+    libpangoft2-1.0-0 \
+    libjpeg-dev \
+    libopenjp2-7-dev \
+    weasyprint
 
-# Install Python dependencies
-COPY requirements.txt .
-RUN pip3 install --no-cache-dir -r requirements.txt
+# Additional dependencies for WeasyPrint
+RUN apt-get install -y libcairo2 libcairo-gobject2 libgdk-pixbuf2.0-0 libpangocairo-1.0-0
 
-# Copy your scrapy project files especially scrapy.cfg
-COPY . /app
-
-# Create a shell script to execute the scrapy crawl command
-RUN echo 'scrapy crawl my_spider' > /app/run_scrapy.sh && chmod +x /app/run_scrapy.sh
-
-# Create a crontab file and add the job
-RUN echo "0 0 * * * /app/run_scrapy.sh > /app/scrapy.log 2>&1" > /etc/cron.d/scrapy-cron
-
-# Apply the cron job
-RUN crontab /etc/cron.d/scrapy-cron
-
-# Ensure the environment is set up
+# Set working directory in the Docker image
 WORKDIR /app
 
-# Command to run cron in the foreground
-CMD ["cron", "-f"]
+# Copy the requirements.txt file into our working directory /app
+COPY requirements.txt .
+
+# Create a virtual environment and activate it
+RUN python3 -m venv venv
+# Install Python dependencies within the virtual environment
+RUN . venv/bin/activate && pip3 install -r requirements.txt
+
+# Copy the rest of the application into the working directory
+COPY . .
+
+# Set environment variables
+ENV AWS_ACCESS_KEY='AKIA2UC3E5PLSMW37JVG' \
+    AWS_SECRET_ACCESS_KEY='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' \
+    MAILERSEND_API_KEY='mlsn.2b5f4cedea8238f179dac85c277fab2e49ca37f5ea02888d5054a3b4441d8fbc' \
+    SENDER_EMAIL='impex.compliance@outlook.com' \
+    RECIPIENT_EMAIL='impex.compliance@outlook.com' \
+    DB_PSQL_HOST='172.17.0.3' \
+    DB_PSQL_PORT=5432 \
+    DB_PSQL_USER='postgres' \
+    DB_PSQL_NAME='main_db' \
+    DB_PSQL_PASSWORD='20032001Orte'
+
+RUN . venv/bin/activate && python setup_database.py
+# Activate virtual environment and run the database setup script
+CMD . venv/bin/activate && python app.py

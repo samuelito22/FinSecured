@@ -1,4 +1,5 @@
 __pycache__
 .env
 scraper.log
-file_checksum.db
+documents_checksums.db
+myenv

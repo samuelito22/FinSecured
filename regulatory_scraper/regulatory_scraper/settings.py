@@ -11,8 +11,12 @@ BOT_NAME = "regulatory_scraper"
 
 SPIDER_MODULES = ["regulatory_scraper.spiders"]
 NEWSPIDER_MODULE = "regulatory_scraper.spiders"
-LOG_ENABLED = False
 LOG_LEVEL = 'INFO'
+LOG_ENABLED = True
+
+ITEM_PIPELINES = {
+    'regulatory_scraper.pipelines.PDFProcessingPipeline': 300,
+}
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = "regulatory_scraper (+http://www.yourdomain.com)"
