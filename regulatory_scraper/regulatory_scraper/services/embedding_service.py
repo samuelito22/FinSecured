@@ -17,11 +17,13 @@ class EmbeddingService:
         self.document = None
         self.chunks = []
 
+        """
         self.pg_vector_store = PGVector(
             embeddings=self.embeddings,
             connection=PGVECTOR_CONNECTION,
             collection_name="embeddings",
         )
+        """
 
     def load_pdf_document(self, pdf_body):
         """Loads a PDF and stores the content into self.document."""
@@ -71,7 +73,7 @@ class EmbeddingService:
         chunk_ids = [f"{document_id}-{idx}" for idx in range(len(chunk_contents))]
 
         # Store the embeddings in the vector store.
-        stored_ids = self.pg_vector_store.add_embeddings(texts=chunk_contents, embeddings=embeddings, metadatas=metadatas, ids=chunk_ids)
+        stored_ids = [] #self.pg_vector_store.add_embeddings(texts=chunk_contents, embeddings=embeddings, metadatas=metadatas, ids=chunk_ids)
 
         return stored_ids
 

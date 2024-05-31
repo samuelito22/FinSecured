@@ -67,11 +67,11 @@ class PDFProcessingPipeline:
                 psql_main_session.flush()
                 document_id = document.id
 
+                # Add embeddings
+                #self.embedding_service.process_and_store_document_embeddings(response_body, document_id)
+
                 # Add pdf to s3 document
                 self.s3_client.put_object(Body=response_body, Bucket=S3_BUCKET_NAME, Key=file_path)
-
-                # Add embeddings
-                self.embedding_service.process_and_store_document_embeddings(response_body, document_id)
 
             spider.logger.info(f"PDF file with URL {file_url} has been changed or added.")
         except Exception as e:
