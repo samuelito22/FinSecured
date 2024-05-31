@@ -68,10 +68,19 @@ class PDFProcessingPipeline:
                 document_id = document.id
 
                 # Add embeddings
-                #self.embedding_service.process_and_store_document_embeddings(response_body, document_id)
+                self.embedding_service.process_and_store_document_embeddings(response_body, document_id)
 
                 # Add pdf to s3 document
-                self.s3_client.put_object(Body=response_body, Bucket=S3_BUCKET_NAME, Key=file_path)
+                self.s3_client.put_object(
+                    Body=response_body,
+                    Bucket=S3_BUCKET_NAME,
+                    Key=file_path,
+                    ContentType='application/pdf',
+                    Metadata={
+                        'OriginalURL': file_url,
+                        'Category': item['category']
+                    }
+                )
 
             spider.logger.info(f"PDF file with URL {file_url} has been changed or added.")
         except Exception as e:

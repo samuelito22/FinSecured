@@ -12,17 +12,7 @@ RUN apt-get update && apt-get install -y \
     libffi-dev \
     libssl-dev \
     libpq-dev \
-    wkhtmltopdf \
-    python3-venv \  
-    libpango-1.0-0 \
-    libharfbuzz0b \
-    libpangoft2-1.0-0 \
-    libjpeg-dev \
-    libopenjp2-7-dev \
-    weasyprint
-
-# Additional dependencies for WeasyPrint
-RUN apt-get install -y libcairo2 libcairo-gobject2 libgdk-pixbuf2.0-0 libpangocairo-1.0-0
+    python3-venv  # Make sure to install python3-venv to create virtual environments
 
 # Set working directory in the Docker image
 WORKDIR /app
@@ -49,6 +39,7 @@ ENV AWS_ACCESS_KEY='AKIA2UC3E5PLSMW37JVG' \
     DB_PSQL_USER='postgres' \
     DB_PSQL_NAME='main_db' \
     DB_PSQL_PASSWORD='20032001Orte'
+
 
 RUN . venv/bin/activate && python setup_database.py
 # Activate virtual environment and run the database setup script

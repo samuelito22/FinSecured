@@ -7,7 +7,6 @@ from langchain.embeddings import HuggingFaceEmbeddings
 from langchain_postgres.vectorstores import PGVector
 from langchain.schema import Document  # Import Document schema
 from regulatory_scraper.config import PGVECTOR_CONNECTION
-from weasyprint import HTML
 
 class EmbeddingService:
     def __init__(self):
@@ -17,13 +16,13 @@ class EmbeddingService:
         self.document = None
         self.chunks = []
 
-        """
+        
         self.pg_vector_store = PGVector(
             embeddings=self.embeddings,
             connection=PGVECTOR_CONNECTION,
             collection_name="embeddings",
         )
-        """
+        
 
     def load_pdf_document(self, pdf_body):
         """Loads a PDF and stores the content into self.document."""
@@ -36,8 +35,7 @@ class EmbeddingService:
     def extract_text_with_pymupdf(self, pdf_body):
         """Extracts text from a PDF using PyMuPDF (fitz)."""
         # Create a BytesIO stream from the PDF body
-        pdf_bytes = HTML(string=pdf_body).write_pdf()
-        doc = fitz.open("pdf", pdf_bytes)
+        doc = fitz.open("pdf", pdf_body)
         text = ""
         for page_num in range(len(doc)):
             page = doc.load_page(page_num)
@@ -73,7 +71,7 @@ class EmbeddingService:
         chunk_ids = [f"{document_id}-{idx}" for idx in range(len(chunk_contents))]
 
         # Store the embeddings in the vector store.
-        stored_ids = [] #self.pg_vector_store.add_embeddings(texts=chunk_contents, embeddings=embeddings, metadatas=metadatas, ids=chunk_ids)
+        stored_ids = self.pg_vector_store.add_embeddings(texts=chunk_contents, embeddings=embeddings, metadatas=metadatas, ids=chunk_ids)
 
         return stored_ids
 
