@@ -64,16 +64,20 @@ class EmbeddingService:
 
         embeddings = self.embeddings.embed_documents([chunk.page_content for chunk in self.chunks])
 
-        # Create metadata for each chunk. For simplicity, storing the document ID and the index of the chunk.
-        metadatas = [{'document_id': document_id, 'chunk_index': idx} for idx, _ in enumerate(chunk_contents)]
+        # Convert document_id to string if it's a UUID
+        document_id_str = str(document_id)
 
-        # Optionally, generate unique IDs for each chunk if needed.
-        chunk_ids = [f"{document_id}-{idx}" for idx in range(len(chunk_contents))]
+        # Create metadata for each chunk. For simplicity, storing the document ID and the index of the chunk.
+        metadatas = [{'document_id': document_id_str, 'chunk_index': idx} for idx, _ in enumerate(chunk_contents)]
+
+        # Generate unique IDs for each chunk.
+        chunk_ids = [f"{document_id_str}-{idx}" for idx in range(len(chunk_contents))]
 
         # Store the embeddings in the vector store.
         stored_ids = self.pg_vector_store.add_embeddings(texts=chunk_contents, embeddings=embeddings, metadatas=metadatas, ids=chunk_ids)
 
         return stored_ids
+
 
     def clear(self):
         self.document = None

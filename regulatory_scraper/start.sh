@@ -1,9 +1,9 @@
 #!/bin/bash
+# Activate the virtual environment
+source /app/venv/bin/activate
 
-# Optional: Any initial setup tasks
-echo "Starting the application..."
+# Now run Scrapy or other Python commands
+scrapy crawl fca_handbook_spider
 
-scrapy crawl fca
-
-# Print a message when the script has finished running
-echo "Application has finished running."
+# Deactivate the virtual environment if needed
+deactivate

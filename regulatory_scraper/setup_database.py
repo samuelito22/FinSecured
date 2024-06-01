@@ -1,5 +1,5 @@
-from regulatory_scraper.database import DatabaseManager, BaseSQLite, BasePostgres 
 from regulatory_scraper.config import DB_CONFIG_SQLITE, DB_CONFIG_PSQL_MAIN, DB_CONFIG_PSQL_EMBEDDING
+from regulatory_scraper.database import DatabaseManager, BaseSQLite, BasePostgres 
 from sqlalchemy import text
 
 def setup_database(config):
