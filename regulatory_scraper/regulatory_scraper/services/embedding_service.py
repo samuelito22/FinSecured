@@ -91,3 +91,27 @@ class EmbeddingService:
         self.clear()
 
         return store_ids
+
+    def delete_document_embeddings(self, document_id):
+        """
+        Deletes all embeddings for a specific document ID.
+        Parameters:
+            document_id (str or UUID): The unique identifier for the document whose embeddings need to be deleted.
+        Returns:
+            int: The number of embeddings deleted.
+        """
+        # Convert document_id to string if it's a UUID
+        document_id_str = str(document_id)
+        
+        # Delete embeddings where the 'document_id' in the metadata matches the provided document_id
+        count_deleted = self.pg_vector_store.delete(metadata={'document_id': document_id_str})
+        
+        return count_deleted
+
+    def delete_documents_embeddings(self, document_ids):
+        document_ids_str = [str(document_id) for document_id in document_ids]
+        num_deleted = self.pg_vector_store.delete({
+            'metadata.document_id': {'$in': document_ids_str}
+        })
+        return num_deleted
+

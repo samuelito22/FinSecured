@@ -29,6 +29,14 @@ DB_CONFIG_PSQL_EMBEDDING = {
     'password': os.getenv('DB_PSQL_PASSWORD')
 }
 
+DB_CONFIG_PSQL = {
+    'type': 'postgres',
+    'host': os.getenv('DB_PSQL_HOST'),
+    'port': int(os.getenv('DB_PSQL_PORT')),
+    'user': os.getenv('DB_PSQL_USER'),
+    'password': os.getenv('DB_PSQL_PASSWORD')
+}
+
 # PGVector Connection String
 PGVECTOR_CONNECTION = f"postgresql+psycopg://{DB_CONFIG_PSQL_EMBEDDING['user']}:{DB_CONFIG_PSQL_EMBEDDING['password']}@{DB_CONFIG_PSQL_EMBEDDING['host']}:{DB_CONFIG_PSQL_EMBEDDING['port']}/{DB_CONFIG_PSQL_EMBEDDING['db_name']}"
 

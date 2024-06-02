@@ -1,6 +1,9 @@
-from regulatory_scraper.config import DB_CONFIG_SQLITE, DB_CONFIG_PSQL_MAIN, DB_CONFIG_PSQL_EMBEDDING
+from regulatory_scraper.config import DB_CONFIG_SQLITE, DB_CONFIG_PSQL_MAIN, DB_CONFIG_PSQL_EMBEDDING, DB_CONFIG_PSQL
 from regulatory_scraper.database import DatabaseManager, BaseSQLite, BasePostgres 
 from sqlalchemy import text
+import logging
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def setup_database(config):
     db_manager = None
@@ -14,24 +17,22 @@ def setup_database(config):
         elif config['type'] == 'postgres' and config['db_name'] == 'main_db':
             BasePostgres.metadata.create_all(db_manager.engine)
         elif config['type'] == 'postgres' and config['db_name'] == 'embedding_db':
-            # Using the engine directly to execute the command
-            with db_manager.engine.begin() as conn:  # Use begin() to handle transactions automatically
+            with db_manager.engine.begin() as conn:
                 conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector;"))
         else:
             raise ValueError("Unsupported database type")
-
-        print(f"Database [{config['type']}] set-up completed. Now closing...")
+        logging.info(f"Database [{config['type']}] set-up completed. Now closing...")
 
     except Exception as e:
-        print("Error happened whilst setting up the database:", e)
-        # Properly handle rollback if session management is available
+        logging.error("Error happened whilst setting up the database: %s", e)
         if db_manager and hasattr(db_manager, 'session'):
             db_manager.session.rollback()
     finally:
         if db_manager:
             db_manager.close()
 
+
 if __name__ == '__main__':
     setup_database(DB_CONFIG_PSQL_MAIN)
-    setup_database(DB_CONFIG_SQLITE)
     setup_database(DB_CONFIG_PSQL_EMBEDDING)
+    setup_database(DB_CONFIG_SQLITE)

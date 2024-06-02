@@ -1,5 +1,9 @@
+import logging
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class DatabaseManager:
     def __init__(self, configuration):
@@ -17,9 +21,9 @@ class DatabaseManager:
         try:
             with self.SessionFactory() as session:
                 session.execute(text("SELECT 1"))
-                print(f"Connection to database [{self.configuration['type']}] established successfully!")
+                logging.info(f"Connection to database [{self.configuration['type']}] established successfully!")
         except Exception as error:
-            print(f"Failed to connect to database [{self.configuration['type']}]: {str(error)}")
+            logging.error(f"Failed to connect to database [{self.configuration['type']}]: {str(error)}")
             self.close()
 
     def _construct_database_url(self):
@@ -33,8 +37,23 @@ class DatabaseManager:
         else:
             raise ValueError(f"Unsupported database type: {db_type}")
 
+    @contextmanager
+    def session_scope(self):
+        """Provide a transactional scope around a series of operations."""
+        session = self.SessionFactory()
+        try:
+            session.begin()
+            yield session
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
     def close(self):
         """Closes the engine and disposes of any resources."""
         if self.engine:
             self.engine.dispose()
-            print("Database engine disposed.")
+            logging.info("Database engine disposed.")
+

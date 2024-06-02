@@ -9,7 +9,14 @@ class FCAHandbookSpider(scrapy.Spider):
 
     def __init__(self, *args, **kwargs):
         super(FCAHandbookSpider, self).__init__(*args, **kwargs)
-        self.processed_urls = set()  # Set to track processed PDF URLs
+        self.allowed_categories = [
+            'PRIN', 'SYSC', 'COCON', 'COND', 'APER', 'FIT', 'FINMAR', 'TC', 'GEN', 'FEES',
+            'GENPRU', 'INSPRU', 'MIFIDPRU', 'MIPRU', 'IPRU-FSOC', 'IPRU-INS', 'IPRU-INV',
+            'COBS', 'ICOBS', 'MCOB', 'BCOBS', 'CMCOB', 'FPCOB', 'CASS', 'MAR', 'PROD', 'ESG',
+            'SUP', 'DEPP', 'DISP', 'CONRED', 'COMP', 'COLL', 'CREDS', 'CONC', 'FUND', 'PROF',
+            'RCB', 'REC', 'LR', 'PRR', 'DTR', 'DISC', 'EMPS', 'OMPS', 'SERV', 'BENCH', 'COLLG',
+            'EG', 'FCG', 'FCTR', 'PERG', 'RFCCBS', 'RPPD', 'UNFCOG', 'WDPG', 'M2G', 'GLOSSARY'
+        ]
 
     def parse(self, response):
         # Extract links to sections within the handbook
@@ -23,9 +30,11 @@ class FCAHandbookSpider(scrapy.Spider):
         for link in pdf_links:
             pdf_url = response.urljoin(link)
             section = pdf_url.split('/')
-            if 'handbook' in section and pdf_url not in self.processed_urls:
-                self.processed_urls.add(pdf_url)
-                yield Request(pdf_url, callback=self.save_pdf, meta={'pdf_url': pdf_url})
+            if 'handbook' in section:
+                category_index = section.index('handbook') + 1
+                category_name = section[category_index]
+                if category_name in self.allowed_categories:
+                    yield Request(pdf_url, callback=self.save_pdf, meta={'pdf_url': pdf_url})
 
     def save_pdf(self, response):
         pdf_url = response.meta['pdf_url']
@@ -42,10 +51,20 @@ class FCAHandbookSpider(scrapy.Spider):
         }
 
     def closed(self, reason):
-        # Final cleanup or error report handling; adapt as necessary
-        '''
-        if self.error_log:
-            subject = "FCA Handbook Spider Error Report"
-            message = "\n".join(self.error_log)
-            #send_email_alert(subject, message)
-        '''
+        # Log the reason why the spider was closed
+        self.logger.info(f"Spider closed because of: {reason}")
+
+        # Log final statistics (if available)
+        if hasattr(self, 'crawler'):
+            stats = self.crawler.stats.get_stats()  # Retrieve stats collected during the crawl
+            self.logger.info(f"Total requests made: {stats.get('downloader/request_count', 0)}")
+            self.logger.info(f"Total requests received: {stats.get('downloader/response_count', 0)}")
+            self.logger.info(f"Total PDFs collected: {stats.get('item_scraped_count', 0)}")
+
+        # Perform any other cleanup necessary for the spider
+        self.logger.info("Performing cleanup and releasing resources.")
+
+        # Custom logic to handle specific cleanup or summary tasks
+        if hasattr(self, 'error_count') and self.error_count > 0:
+            self.logger.warning(f"Encountered {self.error_count} errors during scraping.")
+

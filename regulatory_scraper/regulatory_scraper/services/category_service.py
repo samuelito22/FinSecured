@@ -4,10 +4,7 @@ import uuid
 from sqlalchemy.sql import func
 
 class CategoryService:
-    def __init__(self, session: Session):
-        self.session = session
-
-    def get_category(self, name):
+    def get_category(self, session: Session, name):
         """
         Retrieve a category from the database by its name.
         Parameters:
@@ -15,9 +12,9 @@ class CategoryService:
         Returns:
             Category: The Category object if found, None otherwise.
         """
-        return self.session.query(Category).filter_by(name=name).first()
+        return session.query(Category).filter_by(name=name).first()
 
-    def create_category(self, name, description=None):
+    def create_category(self, session: Session, name, description=None):
         """
         Create and add a new category to the database. This method does not commit the change.
         Parameters:
@@ -32,10 +29,10 @@ class CategoryService:
             name=name,
             description=description
         )
-        self.session.add(new_category)
+        session.add(new_category)
         return new_category
 
-    def get_or_create_category(self, name, description=None):
+    def get_or_create_category(self, session: Session, name, description=None):
         """
         Retrieve a category from the database by name, or create a new one if it does not exist.
         Parameters:

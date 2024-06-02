@@ -3,10 +3,7 @@ from regulatory_scraper.database.models import DocumentChecksum
 from sqlalchemy.sql import func
 
 class ChecksumService:
-    def __init__(self, session: Session):
-        self.session = session
-
-    def add_checksum(self, file_url, checksum):
+    def add_checksum(self, session: Session, file_url, checksum):
         """
         Add a new checksum entry to the database.
         Parameters:
@@ -22,10 +19,10 @@ class ChecksumService:
             checksum=checksum,
             last_accessed=func.now()
         )
-        self.session.add(new_checksum)
+        session.add(new_checksum)
         return new_checksum
 
-    def get_checksum_by_url(self, file_url):
+    def get_checksum_by_url(self, session: Session, file_url):
         """
         Retrieve a checksum entry by file URL.
         Parameters:
@@ -33,9 +30,12 @@ class ChecksumService:
         Returns:
             DocumentChecksum: The checksum entry if found, None otherwise.
         """
-        return self.session.query(DocumentChecksum).filter_by(file_url=file_url).first()
+        checksum_entry = session.query(DocumentChecksum).filter_by(file_url=file_url).first()
+        checksum_entry.last_accessed = func.now()
 
-    def update_last_accessed(self, file_url):
+        return checksum_entry
+
+    def update_last_accessed(self, session: Session, file_url):
         """
         Update the last accessed time for a checksum entry.
         Parameters:
@@ -50,19 +50,31 @@ class ChecksumService:
         else:
             raise ValueError("Checksum entry not found for the specified URL")
 
-    def verify_checksum(self, file_url, checksum):
+    def verify_checksum(self, session: Session, file_url, checksum):
         """
-        Verify if the provided checksum matches the stored checksum for a given URL.
+        Verify if the provided checksum matches the stored checksum for a given URL and check if an entry exists.
         Parameters:
             file_url (str): URL of the file to verify the checksum against.
             checksum (str): The checksum to verify.
         Returns:
-            bool: True if the checksum matches, False otherwise.
+            tuple(bool, bool): 
+                First bool is True if the checksum matches, False otherwise.
+                Second bool is True if a checksum entry exists for the URL, False otherwise.
         """
         checksum_entry = self.get_checksum_by_url(file_url)
-        return bool(checksum_entry and checksum_entry.checksum == checksum)
+        if checksum_entry:
+            # Check if the checksums match
+            is_match = checksum_entry.checksum == checksum
+        else:
+            # No checksum entry found, so no match is possible
+            is_match = False
 
-    def update_checksum_by_url(self, file_url, new_checksum):
+        # The presence of a checksum entry is determined by whether checksum_entry is not None
+        entry_exists = bool(checksum_entry)
+        
+        return is_match, entry_exists
+
+    def update_checksum_by_url(self, session: Session, file_url, new_checksum):
         """
         Update or create a checksum entry for a given file URL.
         Parameters:
