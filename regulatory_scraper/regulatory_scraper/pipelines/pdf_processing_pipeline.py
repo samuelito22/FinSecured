@@ -5,15 +5,13 @@ from sqlalchemy.exc import SQLAlchemyError
 from boto3.exceptions import Boto3Error
 
 from regulatory_scraper.database.manager import DatabaseManager
-from regulatory_scraper.config import DB_CONFIG_SQLITE, DB_CONFIG_PSQL_MAIN, AWS_ACCESS_KEY, S3_BUCKET_NAME, AWS_SECRET_ACCESS_KEY
+from regulatory_scraper.config import DB_CONFIG_PSQL_MAIN, AWS_ACCESS_KEY, S3_BUCKET_NAME, AWS_SECRET_ACCESS_KEY
 
 from regulatory_scraper.services import ChecksumService, CategoryService, DocumentService, EmbeddingService
 
 class PDFProcessingPipeline:
     def open_spider(self, spider):
-        self.db_manager_sqlite = DatabaseManager(DB_CONFIG_SQLITE)
         self.db_manager_psql = DatabaseManager(DB_CONFIG_PSQL_MAIN)
-        self.db_manager_sqlite.establish_connection()
         self.db_manager_psql.establish_connection()
 
         self.checksum_service = ChecksumService()
@@ -41,9 +39,9 @@ class PDFProcessingPipeline:
         spider.logger.debug(f"Checksum calculated: {new_checksum}")
 
         try:
-            with self.db_manager_sqlite.session_scope() as sqlite_session, self.db_manager_psql.session_scope() as psql_session:
+            with self.db_manager_psql.session_scope() as session:
                 spider.logger.debug("Starting checksum verification...")
-                checksum_not_changed, checksum_exist = self.checksum_service.verify_checksum(sqlite_session, file_url, new_checksum)
+                checksum_not_changed, checksum_exist = self.checksum_service.verify_checksum(session, file_url, new_checksum)
                 spider.logger.debug(f"Checksum verification result - Not Changed: {checksum_not_changed}, Exists: {checksum_exist}")
 
                 if checksum_not_changed and checksum_exist:
@@ -52,25 +50,25 @@ class PDFProcessingPipeline:
 
                 if checksum_exist and not checksum_not_changed:
                     spider.logger.debug("Document exists and checksum has changed. Retrieving document...")
-                    document_entry = self.document_service.get_document(file_url=file_url)
+                    document_entry = self.document_service.get_document(session, file_url=file_url)
                     if document_entry:
                         spider.logger.debug(f"Deleting embeddings for document ID: {document_entry.id}")
                         self.embedding_service.delete_document_embeddings(document_entry.id)
                         spider.logger.debug("Embeddings deleted successfully.")
 
                 spider.logger.debug("Updating checksum in the database...")
-                self.checksum_service.update_checksum_by_url(sqlite_session, file_url, new_checksum)
+                self.checksum_service.update_checksum_by_url(session, file_url, new_checksum)
                 spider.logger.debug("Checksum updated successfully.")
 
                 if not checksum_exist:
                     spider.logger.debug("Adding new category...")
-                    category_entry = self.category_service.get_or_create_category(psql_session, category)
-                    psql_session.flush()
+                    category_entry = self.category_service.get_or_create_category(session, category)
+                    session.flush()
                     spider.logger.debug(f"Category {category} added/updated with ID: {category_entry.id}")
 
                     spider.logger.debug("Adding new document...")
-                    document_entry = self.document_service.add_document(psql_session, file_url, file_path, category_entry.id)
-                    psql_session.flush()
+                    document_entry = self.document_service.add_document(session, file_url, file_path, category_entry.id)
+                    session.flush()
                     spider.logger.debug(f"Document added with ID: {document_entry.id}")
                 
                 spider.logger.debug("Processing and storing document embeddings...")

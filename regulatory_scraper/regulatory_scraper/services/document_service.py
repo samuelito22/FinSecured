@@ -40,7 +40,6 @@ class DocumentService:
             # Keep a copy of the document to return after deletion
             deleted_document = document_to_delete
             session.delete(document_to_delete)
-            session.commit()
             return deleted_document  # Return the deleted document object
         else:
             return None  

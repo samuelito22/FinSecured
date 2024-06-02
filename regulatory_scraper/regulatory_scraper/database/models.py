@@ -4,10 +4,9 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.orm import declarative_base, relationship
 
-BaseSQLite = declarative_base()
 BasePostgres = declarative_base()
 
-class DocumentChecksum(BaseSQLite):
+class DocumentChecksum(BasePostgres):
     __tablename__ = 'documents_checksums'
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
