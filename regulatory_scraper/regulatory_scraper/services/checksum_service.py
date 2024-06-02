@@ -12,7 +12,7 @@ class ChecksumService:
         Returns:
             DocumentChecksum: The newly created checksum entry.
         """
-        if self.get_checksum_by_url(file_url):
+        if self.get_checksum_by_url(session, file_url):
             raise ValueError("A checksum entry already exists for this URL.")
         new_checksum = DocumentChecksum(
             file_url=file_url,
@@ -31,7 +31,8 @@ class ChecksumService:
             DocumentChecksum: The checksum entry if found, None otherwise.
         """
         checksum_entry = session.query(DocumentChecksum).filter_by(file_url=file_url).first()
-        checksum_entry.last_accessed = func.now()
+        if checksum_entry:
+            checksum_entry.last_accessed = func.now()
 
         return checksum_entry
 
@@ -43,7 +44,7 @@ class ChecksumService:
         Returns:
             DocumentChecksum: The updated checksum entry.
         """
-        checksum_entry = self.get_checksum_by_url(file_url)
+        checksum_entry = self.get_checksum_by_url(session,file_url)
         if checksum_entry:
             checksum_entry.last_accessed = func.now()
             return checksum_entry
@@ -61,7 +62,7 @@ class ChecksumService:
                 First bool is True if the checksum matches, False otherwise.
                 Second bool is True if a checksum entry exists for the URL, False otherwise.
         """
-        checksum_entry = self.get_checksum_by_url(file_url)
+        checksum_entry = self.get_checksum_by_url(session, file_url)
         if checksum_entry:
             # Check if the checksums match
             is_match = checksum_entry.checksum == checksum
@@ -83,7 +84,7 @@ class ChecksumService:
         Returns:
             DocumentChecksum: The updated or newly created checksum entry.
         """
-        checksum_entry = self.get_checksum_by_url(file_url)
+        checksum_entry = self.get_checksum_by_url(session,file_url)
         if checksum_entry:
             # Update existing checksum and last accessed time
             checksum_entry.checksum = new_checksum
@@ -91,4 +92,4 @@ class ChecksumService:
             return checksum_entry
         else:
             # Create new checksum entry if it does not exist
-            return self.add_checksum(file_url, new_checksum)
+            return self.add_checksum(session, file_url, new_checksum)

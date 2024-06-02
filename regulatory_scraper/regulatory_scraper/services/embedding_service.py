@@ -3,7 +3,7 @@ import re
 import fitz  # PyMuPDF
 from io import BytesIO
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.embeddings import HuggingFaceEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_postgres.vectorstores import PGVector
 from langchain.schema import Document  # Import Document schema
 from regulatory_scraper.config import PGVECTOR_CONNECTION

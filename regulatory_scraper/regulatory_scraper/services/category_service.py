@@ -23,7 +23,7 @@ class CategoryService:
         Returns:
             Category: The newly created Category object.
         """
-        if self.get_category(name):
+        if self.get_category(session,name):
             raise ValueError("A category with the given name already exists.")
         new_category = Category(
             name=name,
@@ -41,8 +41,8 @@ class CategoryService:
         Returns:
             Category: The existing or newly created Category object.
         """
-        category = self.get_category(name)
+        category = self.get_category(session,name)
         if category:
             return category
         else:
-            return self.create_category(name, description)
+            return self.create_category(session, name, description)
