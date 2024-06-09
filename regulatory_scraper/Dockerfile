@@ -28,9 +28,20 @@ RUN python3 -m venv venv \
 # Copy the rest of the application
 COPY . /app
 
+# Set environment variables
+ENV AWS_ACCESS_KEY=AKIA2UC3E5PLSMW37JVG \
+    AWS_SECRET_ACCESS_KEY=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 \
+    MAILERSEND_API_KEY=mlsn.2b5f4cedea8238f179dac85c277fab2e49ca37f5ea02888d5054a3b4441d8fbc \
+    SENDER_EMAIL=impex.compliance@outlook.com \
+    RECIPIENT_EMAIL=impex.compliance@outlook.com \
+    DB_PSQL_HOST=goldenkey-db \
+    DB_PSQL_PORT=5432 \
+    DB_PSQL_USER=postgres \
+    DB_PSQL_PASSWORD=20032001Orte
+
 # Setup the database and make the start script executable
 RUN chmod +x /app/start.sh \
- && echo "0 0 */3 * * /app/start.sh >> /app/cron.log 2>&1" > /etc/cron.d/mycron \
+ && echo "0 0 */1 * * /app/start.sh >> /app/cron.log 2>&1" > /etc/cron.d/mycron \
  && chmod 0644 /etc/cron.d/mycron \
  && crontab /etc/cron.d/mycron \
  && touch /app/cron.log

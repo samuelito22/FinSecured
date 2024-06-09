@@ -9,7 +9,7 @@ from langchain.schema import Document  # Import Document schema
 from regulatory_scraper.config import PGVECTOR_CONNECTION
 
 class EmbeddingService:
-    def __init__(self):
+    def __init__(self, collection_name):
         # Initialize components
         self.text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=80)
         self.embeddings = HuggingFaceEmbeddings()
@@ -20,7 +20,7 @@ class EmbeddingService:
         self.pg_vector_store = PGVector(
             embeddings=self.embeddings,
             connection=PGVECTOR_CONNECTION,
-            collection_name="embeddings",
+            collection_name=collection_name,
         )
         
 

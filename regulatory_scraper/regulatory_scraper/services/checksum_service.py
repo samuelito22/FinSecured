@@ -1,6 +1,5 @@
 from sqlalchemy.orm import Session
 from regulatory_scraper.database.models import DocumentChecksum
-from sqlalchemy.sql import func
 
 class ChecksumService:
     def add_checksum(self, session: Session, file_url, checksum):
@@ -17,7 +16,6 @@ class ChecksumService:
         new_checksum = DocumentChecksum(
             file_url=file_url,
             checksum=checksum,
-            last_accessed=func.now()
         )
         session.add(new_checksum)
         return new_checksum
@@ -31,25 +29,8 @@ class ChecksumService:
             DocumentChecksum: The checksum entry if found, None otherwise.
         """
         checksum_entry = session.query(DocumentChecksum).filter_by(file_url=file_url).first()
-        if checksum_entry:
-            checksum_entry.last_accessed = func.now()
 
         return checksum_entry
-
-    def update_last_accessed(self, session: Session, file_url):
-        """
-        Update the last accessed time for a checksum entry.
-        Parameters:
-            file_url (str): URL of the file whose last accessed time needs updating.
-        Returns:
-            DocumentChecksum: The updated checksum entry.
-        """
-        checksum_entry = self.get_checksum_by_url(session,file_url)
-        if checksum_entry:
-            checksum_entry.last_accessed = func.now()
-            return checksum_entry
-        else:
-            raise ValueError("Checksum entry not found for the specified URL")
 
     def verify_checksum(self, session: Session, file_url, checksum):
         """
@@ -88,8 +69,16 @@ class ChecksumService:
         if checksum_entry:
             # Update existing checksum and last accessed time
             checksum_entry.checksum = new_checksum
-            checksum_entry.last_accessed = func.now()
             return checksum_entry
         else:
             # Create new checksum entry if it does not exist
             return self.add_checksum(session, file_url, new_checksum)
+
+    def get_all_checksums(self, session: Session):
+        """
+        Retrieve all checksum entries from the database.
+        Returns:
+            List[DocumentChecksum]: A list of all checksum entries.
+        """
+
+        return session.query(DocumentChecksum).all()

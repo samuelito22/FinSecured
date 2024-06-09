@@ -1,5 +1,6 @@
 import scrapy
 from scrapy.http import Request
+from regulatory_scraper.config import FCA
 import os
 
 class FCAHandbookSpider(scrapy.Spider):
@@ -41,8 +42,8 @@ class FCAHandbookSpider(scrapy.Spider):
         section = pdf_url.split('/')
         category_index = section.index('handbook') + 1
         category_name = section[category_index]
-        filename = os.path.basename(pdf_url)
-        file_path = f'handbook/{category_name}/{filename}'
+        filename = "_".join(section[category_index:])
+        file_path = f'{FCA}/{category_name}/{filename}'
         yield {
             'file_url': pdf_url,
             'file_path': file_path,

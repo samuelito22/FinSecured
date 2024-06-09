@@ -43,8 +43,11 @@ PGVECTOR_CONNECTION = f"postgresql+psycopg://{DB_CONFIG_PSQL_EMBEDDING['user']}:
 # AWS S3 Bucket Name
 S3_BUCKET_NAME = "financial-services-regulations"
 
+FCA_EMBEDDINGS = "fca_embeddings"
+FCA = "FCA"
+
 # SQLite Database Configuration
 DB_CONFIG_SQLITE = {
     'type': 'sqlite',
-    'path': 'documents_checksums.db'
+    'path': 'documents_bin.db'
 }

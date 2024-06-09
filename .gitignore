@@ -4,3 +4,4 @@ scraper.log
 documents_checksums.db
 myenv
 cron.log
+node_modules
