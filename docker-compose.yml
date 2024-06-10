@@ -1,7 +1,7 @@
 services:
-  goldenkey-db:
+  finsecured-db:
     image: pgvector/pgvector:pg16
-    container_name: goldenkey-postgres
+    container_name: finsecured-postgres
     environment:
       POSTGRES_PASSWORD: 20032001Orte
     ports:
@@ -10,24 +10,24 @@ services:
       - data:/var/lib/postgresql/data
     restart: unless-stopped
 
-  goldenkey-scraper:
+  finsecured-scraper:
     build: ./regulatory_scraper
-    container_name: goldenkey-scraper
+    container_name: finsecured-scraper
     env_file:
       - ./regulatory_scraper/.env
     depends_on:
-      - goldenkey-db
+      - finsecured-db
 
   pgadmin:
     image: dpage/pgadmin4
-    container_name: goldenkey-pgadmin
+    container_name: finsecured-pgadmin
     environment:
       PGADMIN_DEFAULT_EMAIL: sedorodion@hotmail.com
       PGADMIN_DEFAULT_PASSWORD: admin
     ports:
       - "5050:80"
     depends_on:
-      - goldenkey-db
+      - finsecured-db
     restart: unless-stopped
 
 volumes:

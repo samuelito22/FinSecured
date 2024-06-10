@@ -1,5 +1,6 @@
-import { Column, CreatedAt, DataType, HasOne, Model, Table, UpdatedAt } from "sequelize-typescript";
+import { Column, CreatedAt, DataType, HasMany, HasOne, Model, Table, UpdatedAt } from "sequelize-typescript";
 import { UserProfile } from "./UserProfile.model";
+import { Feedback } from "./Feedback.model";
 
 @Table({
     timestamps: true,
@@ -23,4 +24,7 @@ export class User extends Model {
 
     @HasOne(() => UserProfile)
     userProfile: UserProfile;
+
+    @HasMany(() => Feedback)
+    feedbacks: Feedback[];
 }

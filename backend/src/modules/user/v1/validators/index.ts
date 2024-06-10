@@ -1,1 +1,2 @@
-export * from "./userProfile.validator"
+export * from "./user.validator"
+export * from "./feedback.validator"

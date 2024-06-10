@@ -2,3 +2,4 @@ __pycache__
 scraper.log
 documents_checksums.db
 myenv
+.env

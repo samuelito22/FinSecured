@@ -1,31 +1,36 @@
+import { CustomApiError } from '../../../../shared/utils';
 import { User, UserProfile } from '../models';
-import sequelize from '../../../../shared/db/sequelize';
-import { IUser, IUserProfile, IUserProfileData, IUserProfileResponse } from '../types';
+import { CreateUserProfileProps, IUser } from '../types';
+import { Transaction, ForeignKeyConstraintError } from 'sequelize';
 
-async function createUserIfNotExists(userId:string): Promise<IUser> {
-    let user = await User.findByPk(userId);
-    if (!user) {
-        user = await User.create({ id: userId });
+async function createUserIfNotExists(userId:string, transaction?: Transaction): Promise<IUser> {
+    try {
+        let user = await User.findByPk(userId);
+        if (user) throw new CustomApiError(409, 'User with this ID already exists.');
+
+        user = await User.create({ id: userId }, { transaction }); 
+        return user;
+    } catch (error){
+        throw error
     }
-    return user;
 }
 
-async function createUserProfile({ userId, email, phoneNumber, organization }: IUserProfileData): Promise<IUserProfileResponse> {
-    const t = await sequelize.transaction();
+async function createUserProfile({ userId, email, phoneNumber, organization }: CreateUserProfileProps, transaction?: Transaction): Promise<UserProfile> {
     try {
-        const user = await createUserIfNotExists(userId);
         let userProfile = await UserProfile.findOne({ where: { userId } });
         if (userProfile) {
-            userProfile = await userProfile.update({ email, phoneNumber, organization });
+            userProfile = await userProfile.update({ email, phoneNumber, organization }, {transaction});
         } else {
-            userProfile = await UserProfile.create({ userId, email, phoneNumber, organization });
+            userProfile = await UserProfile.create({ userId, email, phoneNumber, organization }, {transaction});
         }
-        await t.commit();
-        return { user, userProfile };
+        return userProfile;
     } catch (error) {
-        await t.rollback();
-        throw error;
+        if (error instanceof ForeignKeyConstraintError) {
+            throw new CustomApiError(404, 'No such user exists to associate with profile.');
+        } else {
+            throw error
+        }
     }
 }
 
-export { createUserProfile };
+export { createUserIfNotExists, createUserProfile };

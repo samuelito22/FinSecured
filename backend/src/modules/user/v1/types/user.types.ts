@@ -11,14 +11,9 @@ export interface IUserProfile {
     // Add other necessary user profile properties
 }
 
-export interface IUserProfileData {
+export interface CreateUserProfileProps {
     userId: string;
     email: string;
     phoneNumber: string;
     organization: string;
-}
-
-export interface IUserProfileResponse {
-    user: IUser;
-    userProfile: IUserProfile;
 }
