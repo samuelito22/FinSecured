@@ -1,6 +1,5 @@
 export interface IUser {
     id: string;
-    // Add other necessary user properties
 }
 
 export interface IUserProfile {
@@ -8,12 +7,15 @@ export interface IUserProfile {
     email: string;
     phoneNumber: string;
     organization: string;
-    // Add other necessary user profile properties
+}
+
+export interface CreateUserProps {
+    userId: string;
+    email: string;
+    phoneNumber: string;
 }
 
 export interface CreateUserProfileProps {
     userId: string;
-    email: string;
-    phoneNumber: string;
     organization: string;
 }

@@ -7,7 +7,7 @@ export const createUserFeedback = async (req: Request, res: Response) => {
     const { content } = req.body
 
     try {
-        FeedbackServices.createUserFeedback({userId, content})
+        await FeedbackServices.createUserFeedback({userId, content})
         sendSuccessResponse(res, 200, 'User feedback created successfully', { });
     } catch (error:any) {
         if (error instanceof CustomApiError) {

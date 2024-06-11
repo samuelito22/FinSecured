@@ -2,14 +2,22 @@ import express, {Request, Response} from 'express';
 import bodyParser from 'body-parser';
 import morgan from 'morgan';
 import UserRoutesV1 from "./src/modules/user/v1/routes"
+import { config } from './src/shared/config';
 
 const app = express();
 
 // Middleware
-app.use(bodyParser.json());
+app.use((req, res, next) => {
+  if (req.originalUrl === '/api/v1/subscriptions/stripe-webhook') {
+    next();
+  } else {
+    bodyParser.json()(req, res, next);
+  }
+});
+
 app.use(bodyParser.urlencoded({ extended: true }));
 
-if (process.env.NODE_ENV === 'development') {
+if (config.env === 'development') {
     app.use(morgan('dev'));
   }
   

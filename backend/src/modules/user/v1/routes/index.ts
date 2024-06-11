@@ -1,9 +1,11 @@
 import { Router } from 'express';
-import createUserRoutes from './createUser.routes';
+import UserRoutes from './user.routes';
+import FeedbackRoutes from "./feedback.routes"
 import authCheck from '../../../../shared/middlewares/authCheck';
 
 const router = Router();
 
-router.use(createUserRoutes, authCheck);
+router.use(UserRoutes, authCheck);
+router.use(FeedbackRoutes, authCheck);
 
 export default router;

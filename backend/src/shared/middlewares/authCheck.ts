@@ -1,17 +1,17 @@
 import express from 'express';
 import jwks from 'jwks-rsa';
 import { expressjwt as jwt, Params } from "express-jwt";
-
+import { config } from '../config';
 
 const authCheck = jwt({
     secret: jwks.expressJwtSecret({
         cache: true,
         rateLimit: true,
         jwksRequestsPerMinute: 5,
-        jwksUri: `https://your-auth0-domain/.well-known/jwks.json`,
+        jwksUri: config.auth0.auth0Domain,
     }),
-    audience: 'your-api-audience',
-    issuer: `https://your-auth0-domain/`,
+    audience: config.auth0.auth0ApiAudience,
+    issuer: config.auth0.auth0Domain,
     algorithms: ['RS256'] 
 } as Params);
 

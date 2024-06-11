@@ -6,7 +6,7 @@ import { CreateUserFeedbackProps } from '../types';
 
 export async function createUserFeedback({ userId, content }:CreateUserFeedbackProps, transaction?: Transaction): Promise<Feedback>{
     try {
-        let feedback = Feedback.create({
+        let feedback = await Feedback.create({
             userId,
             content
         }, {transaction})
