@@ -41,7 +41,7 @@ DB_CONFIG_PSQL = {
 PGVECTOR_CONNECTION = f"postgresql+psycopg://{DB_CONFIG_PSQL_EMBEDDING['user']}:{DB_CONFIG_PSQL_EMBEDDING['password']}@{DB_CONFIG_PSQL_EMBEDDING['host']}:{DB_CONFIG_PSQL_EMBEDDING['port']}/{DB_CONFIG_PSQL_EMBEDDING['db_name']}"
 
 # AWS S3 Bucket Name
-S3_BUCKET_NAME = "financial-services-regulations"
+S3_BUCKET_NAME = os.getenv('S3_BUCKET_NAME')
 
 FCA_EMBEDDINGS = "fca_embeddings"
 FCA = "FCA"

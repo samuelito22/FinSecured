@@ -12,7 +12,6 @@ export interface CreateTrialSubscriptionProps extends BaseSubscriptionProps {
 export interface CreateFullSubscriptionProps extends BaseSubscriptionProps {
     isTrial: false;
     planId: number;
-    stripeSubscriptionId: string;
 }
   
 

@@ -6,3 +6,4 @@ myenv
 cron.log
 node_modules
 venv
+documents_bin.db

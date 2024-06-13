@@ -3,16 +3,19 @@ import re
 import fitz  # PyMuPDF
 from io import BytesIO
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_cohere import CohereEmbeddings
 from langchain_postgres.vectorstores import PGVector
 from langchain.schema import Document  # Import Document schema
 from regulatory_scraper.config import PGVECTOR_CONNECTION
+from regulatory_scraper.utils.processing import extract_text_with_pymupdf
 
 class EmbeddingService:
     def __init__(self, collection_name):
         # Initialize components
-        self.text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=80)
-        self.embeddings = HuggingFaceEmbeddings()
+        self.text_splitter = RecursiveCharacterTextSplitter(chunk_size=512, chunk_overlap=50)
+        self.embeddings = CohereEmbeddings(model="embed-english-v3.0")
+        self.collection_name = collection_name
+
         self.document = None
         self.chunks = []
 
@@ -27,21 +30,10 @@ class EmbeddingService:
     def load_pdf_document(self, pdf_body):
         """Loads a PDF and stores the content into self.document."""
         try:
-            text = self.extract_text_with_pymupdf(pdf_body)
+            text = extract_text_with_pymupdf(pdf_body)
             self.document = Document(page_content=text)
         except Exception as e:
             raise ValueError(f"Failed to load PDF document: {str(e)}")
-
-    def extract_text_with_pymupdf(self, pdf_body):
-        """Extracts text from a PDF using PyMuPDF (fitz)."""
-        # Create a BytesIO stream from the PDF body
-        doc = fitz.open("pdf", pdf_body)
-        text = ""
-        for page_num in range(len(doc)):
-            page = doc.load_page(page_num)
-            text += page.get_text()
-        doc.close()  # Ensure the document is closed after extracting text
-        return text
 
     def split_into_chunks(self):
         """Splits loaded document into chunks."""
@@ -56,37 +48,46 @@ class EmbeddingService:
         cleaned_text = re.sub(' +', ' ', cleaned_text)
         return cleaned_text
 
-    def vectorize_and_store_embeddings(self, document_id):
-        """Vectorizes the text chunks and stores them as embeddings."""
+    def vectorize_and_store_embeddings(self, document_id, keywords, jurisdiction):
         if not self.chunks:
             raise ValueError("No chunks to process. Please split a document before vectorizing.")
+
+        # Prepare text chunks and clean them
         chunk_contents = [self.clean_text(chunk.page_content) for chunk in self.chunks]
 
-        embeddings = self.embeddings.embed_documents([chunk.page_content for chunk in self.chunks])
+        # Batch processing
+        max_batch_size = 96
+        stored_ids = []
+        for i in range(0, len(chunk_contents), max_batch_size):
+            batch_chunks = chunk_contents[i:i + max_batch_size]
+            embeddings = self.embeddings.embed_documents(batch_chunks)
 
-        # Convert document_id to string if it's a UUID
-        document_id_str = str(document_id)
+            # Metadata for each chunk
+            metadatas = [
+                {'document_id': str(document_id), 'keywords': keywords, 'regulation_body': self.collection_name,
+                'jurisdiction': jurisdiction, 'chunk_index': idx + i}
+                for idx in range(len(batch_chunks))
+            ]
 
-        # Create metadata for each chunk. For simplicity, storing the document ID and the index of the chunk.
-        metadatas = [{'document_id': document_id_str, 'chunk_index': idx} for idx, _ in enumerate(chunk_contents)]
+            # Unique IDs for each chunk
+            chunk_ids = [f"{str(document_id)}-{idx + i}" for idx in range(len(batch_chunks))]
 
-        # Generate unique IDs for each chunk.
-        chunk_ids = [f"{document_id_str}-{idx}" for idx in range(len(chunk_contents))]
-
-        # Store the embeddings in the vector store.
-        stored_ids = self.pg_vector_store.add_embeddings(texts=chunk_contents, embeddings=embeddings, metadatas=metadatas, ids=chunk_ids)
+            # Store the embeddings
+            stored_batch_ids = self.pg_vector_store.add_embeddings(texts=batch_chunks, embeddings=embeddings, metadatas=metadatas, ids=chunk_ids)
+            stored_ids.extend(stored_batch_ids)
 
         return stored_ids
+
 
 
     def clear(self):
         self.document = None
         self.chunks = []
 
-    def process_and_store_document_embeddings(self, pdf_body, document_id):
+    def process_and_store_document_embeddings(self, pdf_body, document_id, keywords, jurisdiction):
         self.load_pdf_document(pdf_body)
         self.split_into_chunks()
-        store_ids = self.vectorize_and_store_embeddings(document_id)
+        store_ids = self.vectorize_and_store_embeddings(document_id, keywords, jurisdiction)
 
         self.clear()
 

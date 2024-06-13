@@ -17,7 +17,7 @@ type FeedbackCreationAttributes = Optional<FeedbackAttributes, 'createdAt' | 'id
     tableName: 'feedbacks',
     modelName: 'Feedback'
 })
-export class Feedback extends Model<Feedback> {
+export class Feedback extends Model<FeedbackAttributes, FeedbackCreationAttributes> {
     @PrimaryKey
     @Column({
         type: DataType.UUID,

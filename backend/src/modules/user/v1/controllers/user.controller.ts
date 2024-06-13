@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import sequelize from '../../../../shared/db/sequelize';
+import sequelize from '../../../../shared/db/sequelize.config';
 import { createUserIfNotExists, createUserProfile } from '../services';
 import { CustomApiError, sendErrorResponse, sendSuccessResponse } from '../../../../shared/utils';
 import { createSubscription } from '../../../subscription/v1/services';

@@ -23,6 +23,7 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt /app/
 RUN python3 -m venv venv \
  && . venv/bin/activate \
+ && python -m spacy download en_core_web_sm \
  && pip3 install -r requirements.txt
 
 # Copy the rest of the application

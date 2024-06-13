@@ -1,11 +1,18 @@
 import uuid
 from sqlalchemy import Column, String, Integer, Text, DateTime, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, ARRAY  
 from sqlalchemy.sql import func
 from sqlalchemy.orm import declarative_base, relationship
+from enum import Enum
+from sqlalchemy import Enum as SQLAlchemyEnum  
 
 BasePostgres = declarative_base()
 BaseSQLite = declarative_base()
+
+class Jurisdiction(Enum):
+    UK = "UK"
+    EU = "EU"
+    US = "US"
 
 class DocumentBin(BaseSQLite):
     __tablename__ = 'documents_bin'
@@ -28,7 +35,10 @@ class Document(BasePostgres):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     file_url = Column(String, unique=True, nullable=False, index=True)
     file_s3_path = Column(String, nullable=False)
-    regulation = Column(Text)
+    regulation_body = Column(Text, nullable=False)
+    summary = Column(Text, nullable=True)
+    keywords = Column(ARRAY(Text), nullable=False)
+    jurisdiction = Column(SQLAlchemyEnum(Jurisdiction), nullable=False)
     category_id = Column(Integer, ForeignKey('categories.id'), nullable=False)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now())
