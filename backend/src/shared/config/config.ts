@@ -13,7 +13,7 @@ const envVarsSchema = Joi.object({
     STRIPE_WEBHOOK_SECRET: Joi.string().required(),
     AUTH0_DOMAIN: Joi.string().uri().required(),
     AUTH0_API_AUDIENCE: Joi.string().uri().required(),
-    MISTRAL_AI_API_KEY: Joi.string().required()
+    COHERE_API_KEY: Joi.string().required()
 }).unknown(true);  // Allows for other non-specified env variables
 
 // Validate the environment variables
@@ -41,8 +41,8 @@ export const config = {
         auth0ApiAudience: validatedEnvVars.AUTH0_API_AUDIENCE,
         auth0Domain: validatedEnvVars.AUTH0_DOMAIN
     },
-    mistral_ai:{
-        apiKey: validatedEnvVars.MISTRAL_AI_API_KEY
+    cohereApiKey:{
+        apiKey: validatedEnvVars.COHERE_API_KEY
     }
 };
 

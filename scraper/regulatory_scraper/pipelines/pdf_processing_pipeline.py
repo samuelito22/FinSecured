@@ -7,7 +7,7 @@ from sqlalchemy.sql import func
 
 from regulatory_scraper.database import DatabaseManager, DocumentBin
 from regulatory_scraper.config import DB_CONFIG_PSQL_MAIN, AWS_ACCESS_KEY, S3_BUCKET_NAME, AWS_SECRET_ACCESS_KEY, DB_CONFIG_SQLITE, FCA, FCA_EMBEDDINGS
-from regulatory_scraper.utils import get_keywords, extract_text_with_pymupdf
+from regulatory_scraper.utils import get_keywords, extract_text_with_pymupdf, get_summary
 
 from regulatory_scraper.services import ChecksumService, CategoryService, DocumentService, EmbeddingService
 
@@ -84,7 +84,7 @@ class PDFProcessingPipeline:
                     keywords = get_keywords(file_text)
 
                     spider.logger.debug("Adding new document...")
-                    document_entry = self.document_service.add_document(session, file_url, file_path, category_entry.id, FCA, "No summary.", keywords, jurisdiction)
+                    document_entry = self.document_service.add_document(session, file_url, file_path, category_entry.id, FCA, "summary", keywords, jurisdiction)
                     session.flush()
                     spider.logger.debug(f"Document added with ID: {document_entry.id}")
                 

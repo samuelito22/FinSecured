@@ -1,10 +1,9 @@
-import { ChatMistralAI } from "@langchain/mistralai";
+import { Cohere } from "@langchain/cohere";
 import { config } from "../config";
 
-const mistralAIModel = new ChatMistralAI({
-  apiKey: config.mistral_ai.apiKey,
-  model: "mistral-small",
-  maxTokens: 200
+const cohereAIModel = new Cohere({
+  maxTokens: 150,
+  apiKey: config.cohereApiKey.apiKey // In Node.js defaults to process.env.COHERE_API_KEY
 });
 
-export default mistralAIModel;
+export default cohereAIModel;

@@ -36,7 +36,7 @@ class Document(BasePostgres):
     file_url = Column(String, unique=True, nullable=False, index=True)
     file_s3_path = Column(String, nullable=False)
     regulation_body = Column(Text, nullable=False)
-    summary = Column(Text, nullable=True)
+    summary = Column(Text, nullable=False)
     keywords = Column(ARRAY(Text), nullable=False)
     jurisdiction = Column(SQLAlchemyEnum(Jurisdiction), nullable=False)
     category_id = Column(Integer, ForeignKey('categories.id'), nullable=False)

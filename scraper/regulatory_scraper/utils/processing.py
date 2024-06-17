@@ -4,6 +4,7 @@ from keyphrase_vectorizers import KeyphraseCountVectorizer
 import warnings
 import fitz
 import re 
+from langchain_community.llms import Ollama
 
 # Filter out the specific sklearn warning about token patterns
 warnings.filterwarnings("ignore", message="The parameter 'token_pattern' will not be used since 'tokenizer' is not None")
@@ -15,6 +16,10 @@ nlp = spacy.load('en_core_web_sm')
 # Explicitly specify the model for summarization
 kw_model = KeyBERT()
 vectorizer = KeyphraseCountVectorizer(spacy_pipeline=nlp, pos_pattern='<J.*>*<N.*>+')
+
+llm = Ollama(
+    model="llama3"
+)
 
 def get_keywords(file_text):
     """
@@ -40,3 +45,8 @@ def extract_text_with_pymupdf(pdf_body):
         text += page.get_text()
     doc.close()
     return clean_hyphenated_words(text)
+
+def get_summary(file_text):
+    summary = llm.invoke("Tell me a joke")
+
+    print(summary)
