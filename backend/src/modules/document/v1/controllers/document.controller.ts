@@ -2,51 +2,35 @@ import { Request, Response } from "express";
 import { CustomApiError, sendErrorResponse, sendSuccessResponse } from "../../../../shared/utils";
 import { pgvectorStoreFCA } from "../../../../shared/db/vectorStore.config";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
-import mistralAIModel from "../../../../shared/db/mistralAI.config";
+import { Document } from "@langchain/core/documents";
+import { cohereChat, cohereRerank } from "../../../../shared/ai/cohereModel";
+
+const docsIsEmpty = (res: Response) => {
+    return sendSuccessResponse(res, 200, `Query successfully answered.`, { answer: "We could not find reliable information for your query. For accurate and safe advice, please consult a compliance expert or refine your inquiry." });
+}
 
 export const getAnswerToQuery = async (req: Request, res: Response) => {
     const { query } = req.body;
 
     try {
-        // Perform the similarity search
-        const similaritySearchResult = await pgvectorStoreFCA.similaritySearchWithScore(query, 5);
-        const highestScore = Math.max(...similaritySearchResult.map(doc => doc[1]));
+        const similaritySearchResult = await pgvectorStoreFCA.similaritySearch(query);
+        console.log(JSON.stringify(similaritySearchResult, null, 2));
+        
 
-        // Extract and format context from the top document(s)
-        const sortedDocuments = similaritySearchResult.sort((a, b) => b[1] - a[1]);
-        const context = sortedDocuments.map(doc => `${doc[0].pageContent}`).join(' \n\n');
-
-        // Create a chat prompt including the context and the user query
         const prompt = ChatPromptTemplate.fromMessages([
-            ["system", "You are a highly knowledgeable assistant specializing in financial regulations. Your goal is to provide accurate, detailed, and specific answers that help users comply with financial regulations."],
-            ["system", "Consider the following information extracted from the most relevant documents to answer the query:"],
-            ["system", "{context}"], 
-            ["human", "{query}"],
-            ["system", "answer according to the language of the user's question."],
-            ["system", "When answering, please cite the relevant sections and provide a concise explanation of how they apply to the user's situation. Ensure the information is up-to-date and accurate."]
+            ["system", "You are a sophisticated AI specializing in financial regulations. Your primary objective is to provide precise, comprehensive, and specific information that assists users in adhering to financial regulations."],
+            ["system", "Based on the extracted information from highly relevant documents, consider the following context for formulating your response:"],
+            ["system", "{context}"], // dynamically inserted context from relevant documents
+            ["human", "{query}"], // dynamically inserted user query
+            ["system", "Craft your response to mirror the user's language style. Provide detailed answers that directly address the user's query."],
+            ["system", "Your answer should cite specific sections of the relevant laws or guidelines and explain their implications for the user's specific situation. Make sure all information is current and accurately reflects the latest regulatory standards."],
+            ["system", "Conclude your response with a definitive statement. Avoid ending with questions, and aim for concise yet comprehensive replies."]
         ]);
         
 
-        const chain = prompt.pipe(mistralAIModel);
-        
-        const response = await chain.invoke({
-        query,
-        context
-        });
-
-        let confidenceLevel;
-
-        if (highestScore >= 0.9) {
-            confidenceLevel = "high confidence";
-        } else if (highestScore >= 0.7 && highestScore < 0.9) {
-            confidenceLevel = "moderate confidence";
-        } else if (highestScore >= 0.5 && highestScore < 0.7) {
-            confidenceLevel = "low confidence";
-        } else {
-            confidenceLevel = "minimal confidence";
-        }
-        
-        sendSuccessResponse(res, 200, `Query successfully answered with ${confidenceLevel}.`, { answer: response.content, source: sortedDocuments.map((doc) => doc[0].metadata) });
+        const chain = prompt.pipe(cohereChat);
+       
+        return sendSuccessResponse(res, 200, `Query successfully answered.`, { answer: "" });
 
 
     } catch (error:any) {
@@ -58,3 +42,4 @@ export const getAnswerToQuery = async (req: Request, res: Response) => {
         }
     }
 };
+

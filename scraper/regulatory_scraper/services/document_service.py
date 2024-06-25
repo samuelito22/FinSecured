@@ -4,7 +4,7 @@ from sqlalchemy.sql import func
 import uuid
 
 class DocumentService:
-    def add_document(self, session: Session, file_url, file_s3_path, category_id, regulation, summary, keywords, jurisdiction):
+    def add_document(self, session: Session, file_url, file_s3_path, category_id, regulation):
         """
         Add a new document entry to the database. 
         Parameters:
@@ -23,9 +23,6 @@ class DocumentService:
             file_s3_path=file_s3_path,
             category_id=category_id,
             regulation_body=regulation,
-            jurisdiction=jurisdiction,
-            summary=summary,
-            keywords=keywords
         )
         session.add(new_document)
         return new_document

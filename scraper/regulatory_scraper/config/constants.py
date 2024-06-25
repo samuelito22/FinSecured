@@ -43,7 +43,7 @@ PGVECTOR_CONNECTION = f"postgresql+psycopg://{DB_CONFIG_PSQL_EMBEDDING['user']}:
 # AWS S3 Bucket Name
 S3_BUCKET_NAME = os.getenv('S3_BUCKET_NAME')
 
-FCA_EMBEDDINGS = "fca_embeddings"
+FCA_EMBEDDINGS = "fca_regulatory"
 FCA = "FCA"
 
 # SQLite Database Configuration
@@ -51,3 +51,5 @@ DB_CONFIG_SQLITE = {
     'type': 'sqlite',
     'path': 'documents_bin.db'
 }
+
+COHERE_API_KEY = os.getenv('COHERE_API_KEY')

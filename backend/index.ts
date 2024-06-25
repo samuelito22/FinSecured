@@ -1,7 +1,6 @@
 import app from './src/app';
 import { config } from './src/shared/config';
 import sequelize from './src/shared/db/sequelize.config';
-import { closeOpenPools } from './src/shared/db/vectorStore.config';
 
 const PORT = config.port || 3000;
 
@@ -27,7 +26,6 @@ const exitHandler = () => {
     server.close(async () => {
       //logger.info('Server closed');
       await sequelize.close()
-      await closeOpenPools()
       process.exit(1);
     });
   } else {

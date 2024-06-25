@@ -3,13 +3,9 @@ import {
   } from "@langchain/community/vectorstores/pgvector";
 import pg from 'pg';
 import { config } from "../config";
-import { MistralAIEmbeddings } from "@langchain/mistralai";
+import { cohereEmbeddings } from "../ai/cohereModel";
 
 const { Pool } = pg;
-
-const embeddings = new MistralAIEmbeddings({
-  apiKey: config.mistral_ai.apiKey
-});
 
 const reusablePool = new Pool({
     connectionString: config.database.embeddingDatabaseUrl
@@ -29,7 +25,7 @@ const configEmbeddingFCA = {
   };
 
 
-const pgvectorStoreFCA = new PGVectorStore(embeddings, configEmbeddingFCA);
+const pgvectorStoreFCA = new PGVectorStore(cohereEmbeddings, configEmbeddingFCA);
 
 const closeOpenPools = async () => {
     if(reusablePool){
