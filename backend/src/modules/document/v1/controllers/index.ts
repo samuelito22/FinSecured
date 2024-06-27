@@ -1,0 +1,1 @@
+export * as DocumentController from "./document.controller"

@@ -22,7 +22,7 @@ class DocumentService:
             file_url=file_url,
             file_s3_path=file_s3_path,
             category_id=category_id,
-            regulation=regulation
+            regulation_body=regulation,
         )
         session.add(new_document)
         return new_document

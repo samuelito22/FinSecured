@@ -1,12 +1,10 @@
 import { Request, Response } from 'express';
 import Stripe from 'stripe';
-import { config } from '../../../../shared/config';
+import { config, stripe } from '../../../../shared/config';
 import { Plan, Subscription } from '../models';
 import * as StripeServices from "../services/stripe.service"
 import { User } from '../../../user/v1/models';
-import sequelize from '../../../../shared/db/sequelize';
-
-const stripe = new Stripe(config.stripe.stripeSecretKey)
+import sequelize from '../../../../shared/db/sequelize.config';
 
 export const handleStripeWebhook = async (request: Request, response: Response) => {
     let event: Stripe.Event;

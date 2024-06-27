@@ -84,11 +84,11 @@ export class Subscription extends Model<SubscriptionAttributes, SubscriptionCrea
     static validateSubscription(instance: Subscription) {
         if (instance.isTrial) {
             if (instance.planId !== null) {
-                throw new Error("PlanId and StripeSubscriptionId must be null for trial subscriptions.");
+                throw new Error("PlanId must be null for trial subscriptions.");
             }
         } else {
             if (instance.planId === null) {
-                throw new Error("PlanId and StripeSubscriptionId must be present for non-trial subscriptions.");
+                throw new Error("PlanId must be present for non-trial subscriptions.");
             }
         }
     }

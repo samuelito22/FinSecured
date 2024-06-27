@@ -17,19 +17,18 @@ export async function createSubscription(props: CreateSubscriptionProps, transac
         if (!isTrial) {
             // Ensure props are of the type CreateFullSubscriptionProps for TypeScript safety
             const fullProps = props as CreateFullSubscriptionProps;
-            const { planId, stripeSubscriptionId } = fullProps;
+            const { planId } = fullProps;
             const subscription = await Subscription.create({
                 isTrial,
                 startDate,
                 endDate,
                 userId,
                 planId,
-                stripeSubscriptionId,
                 status: 'active'  // Assuming initial status for new full subscriptions
             }, { transaction });
             return subscription;
         } else {
-            // For trial, planId and stripeSubscriptionId should be null and handled by model validation
+            // For trial, planId should be null and handled by model validation
             const subscription = await Subscription.create({
                 isTrial,
                 startDate,

@@ -1,6 +1,6 @@
-import app from './app';
+import app from './src/app';
 import { config } from './src/shared/config';
-import sequelize from './src/shared/db/sequelize';
+import sequelize from './src/shared/db/sequelize.config';
 
 const PORT = config.port || 3000;
 
@@ -23,8 +23,9 @@ sequelize.authenticate() // First, confirm that the connection is successful
 
 const exitHandler = () => {
   if (server) {
-    server.close(() => {
+    server.close(async () => {
       //logger.info('Server closed');
+      await sequelize.close()
       process.exit(1);
     });
   } else {
@@ -34,6 +35,7 @@ const exitHandler = () => {
 
 const unexpectedErrorHandler = (error: Error) => {
   //logger.error(error);
+  console.log(error)
   exitHandler();
 };
 

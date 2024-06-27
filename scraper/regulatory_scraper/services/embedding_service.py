@@ -1,117 +1,100 @@
+# Standard library imports
 import os
 import re
-import fitz  # PyMuPDF
+import time
 from io import BytesIO
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_postgres.vectorstores import PGVector
-from langchain.schema import Document  # Import Document schema
+
+# Third-party library imports
+import fitz  # PyMuPDF
+from sqlalchemy import make_url
+import qdrant_client
+from qdrant_client import models, QdrantClient
+
+# Local application/library specific imports
+from llama_index.core import VectorStoreIndex, Document
+from llama_index.core.node_parser import SemanticSplitterNodeParser
+from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+from llama_index.vector_stores.qdrant import QdrantVectorStore
 from regulatory_scraper.config import PGVECTOR_CONNECTION
+from regulatory_scraper.utils import extract_text_with_pymupdf, SafeSemanticSplitter
 
 class EmbeddingService:
     def __init__(self, collection_name):
-        # Initialize components
-        self.text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=80)
-        self.embeddings = HuggingFaceEmbeddings()
-        self.document = None
-        self.chunks = []
+        self.collection_name = collection_name
+        self.initialize_components()
+        self.setup_qdrant()
 
-        
-        self.pg_vector_store = PGVector(
-            embeddings=self.embeddings,
-            connection=PGVECTOR_CONNECTION,
-            collection_name=collection_name,
+    def initialize_components(self):
+        self.embed_model = HuggingFaceEmbedding(model_name="thenlper/gte-large")
+        self.splitter = SafeSemanticSplitter(
+            buffer_size=1,
+            breakpoint_percentile_threshold=80,
+            embed_model=self.embed_model,
+            safety_chunk_size=1024,
+            safety_chunk_overlap=80
         )
-        
+        self.qdrant_client = QdrantClient(host="localhost", port=6333)
+        self.vector_store = QdrantVectorStore(client=self.qdrant_client, collection_name=self.collection_name)
+        self.vector_index = VectorStoreIndex.from_vector_store(self.vector_store, self.embed_model)
+
+    def setup_qdrant(self):
+        if not self.qdrant_client.collection_exists(collection_name=self.collection_name):
+            self.qdrant_client.create_collection(
+                self.collection_name,
+                vectors_config=models.VectorParams(
+                    size=1024,
+                    distance=models.Distance.COSINE,
+                    on_disk=True,
+                ),
+                quantization_config=models.BinaryQuantization(
+                    binary=models.BinaryQuantizationConfig(always_ram=True),
+                ),
+            )
+
+    def process_document(self, pdf_body, document_id, regulation, file_url):
+        self.document = self.load_pdf_document(pdf_body)
+        self.nodes = self.split_into_nodes(self.document)
+        self.vectorize_and_store_embeddings(document_id, regulation, file_url)
+        self.clear()
 
     def load_pdf_document(self, pdf_body):
-        """Loads a PDF and stores the content into self.document."""
         try:
-            text = self.extract_text_with_pymupdf(pdf_body)
-            self.document = Document(page_content=text)
+            text = extract_text_with_pymupdf(pdf_body)
+            return Document(text=text)
         except Exception as e:
             raise ValueError(f"Failed to load PDF document: {str(e)}")
 
-    def extract_text_with_pymupdf(self, pdf_body):
-        """Extracts text from a PDF using PyMuPDF (fitz)."""
-        # Create a BytesIO stream from the PDF body
-        doc = fitz.open("pdf", pdf_body)
-        text = ""
-        for page_num in range(len(doc)):
-            page = doc.load_page(page_num)
-            text += page.get_text()
-        doc.close()  # Ensure the document is closed after extracting text
-        return text
-
-    def split_into_chunks(self):
-        """Splits loaded document into chunks."""
-        if not self.document:
+    def split_into_nodes(self, document):
+        if not document:
             raise ValueError("Document is not loaded. Please load a document before splitting.")
-        self.chunks = self.text_splitter.split_documents([self.document])
+        return self.splitter.get_nodes_from_documents([document])
 
-    def clean_text(self, text):
-        # Remove \n and replace \xa0 with space
-        cleaned_text = text.replace('\n', ' ').replace('\xa0', ' ')
-        # Remove extra spaces
-        cleaned_text = re.sub(' +', ' ', cleaned_text)
-        return cleaned_text
+    def vectorize_and_store_embeddings(self, document_id, regulation, file_url):
+        if not self.nodes:
+            raise ValueError("No node to process. Please split a document before vectorizing.")
+        for node in self.nodes:
+            metadata = {
+                'document_id': str(document_id),
+                'regulation_body': regulation,
+                'file_url': file_url
+            }
+            node.metadata = metadata
 
-    def vectorize_and_store_embeddings(self, document_id):
-        """Vectorizes the text chunks and stores them as embeddings."""
-        if not self.chunks:
-            raise ValueError("No chunks to process. Please split a document before vectorizing.")
-        chunk_contents = [self.clean_text(chunk.page_content) for chunk in self.chunks]
+            embeddings = self.embed_model.get_text_embedding(
+                node.get_content(metadata_mode="all")
+            )
 
-        embeddings = self.embeddings.embed_documents([chunk.page_content for chunk in self.chunks])
-
-        # Convert document_id to string if it's a UUID
-        document_id_str = str(document_id)
-
-        # Create metadata for each chunk. For simplicity, storing the document ID and the index of the chunk.
-        metadatas = [{'document_id': document_id_str, 'chunk_index': idx} for idx, _ in enumerate(chunk_contents)]
-
-        # Generate unique IDs for each chunk.
-        chunk_ids = [f"{document_id_str}-{idx}" for idx in range(len(chunk_contents))]
-
-        # Store the embeddings in the vector store.
-        stored_ids = self.pg_vector_store.add_embeddings(texts=chunk_contents, embeddings=embeddings, metadatas=metadatas, ids=chunk_ids)
-
-        return stored_ids
-
+            node.embedding = embeddings
+        self.vector_index.insert_nodes(self.nodes)
 
     def clear(self):
         self.document = None
-        self.chunks = []
-
-    def process_and_store_document_embeddings(self, pdf_body, document_id):
-        self.load_pdf_document(pdf_body)
-        self.split_into_chunks()
-        store_ids = self.vectorize_and_store_embeddings(document_id)
-
-        self.clear()
-
-        return store_ids
+        self.nodes = []
 
     def delete_document_embeddings(self, document_id):
-        """
-        Deletes all embeddings for a specific document ID.
-        Parameters:
-            document_id (str or UUID): The unique identifier for the document whose embeddings need to be deleted.
-        Returns:
-            int: The number of embeddings deleted.
-        """
-        # Convert document_id to string if it's a UUID
         document_id_str = str(document_id)
-        
-        # Delete embeddings where the 'document_id' in the metadata matches the provided document_id
-        count_deleted = self.pg_vector_store.delete(metadata={'document_id': document_id_str})
-        
-        return count_deleted
+        return self.vector_store.delete(metadata={'document_id': document_id_str})
 
     def delete_documents_embeddings(self, document_ids):
         document_ids_str = [str(document_id) for document_id in document_ids]
-        num_deleted = self.pg_vector_store.delete({
-            'metadata.document_id': {'$in': document_ids_str}
-        })
-        return num_deleted
-
+        return self.vector_store.delete({'metadata.document_id': {'$in': document_ids_str}})
