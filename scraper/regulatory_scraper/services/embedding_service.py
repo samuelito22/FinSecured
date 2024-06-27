@@ -34,21 +34,31 @@ class EmbeddingService:
             safety_chunk_overlap=80
         )
         self.qdrant_client = QdrantClient(host="localhost", port=6333)
-        self.vector_store = QdrantVectorStore(client=self.qdrant_client, collection_name=self.collection_name)
+        self.vector_store = QdrantVectorStore(client=self.qdrant_client, collection_name=self.collection_name, enable_hybrid=True)
         self.vector_index = VectorStoreIndex.from_vector_store(self.vector_store, self.embed_model)
 
     def setup_qdrant(self):
         if not self.qdrant_client.collection_exists(collection_name=self.collection_name):
             self.qdrant_client.create_collection(
                 self.collection_name,
-                vectors_config=models.VectorParams(
+                vectors_config={
+                    "text-dense": models.VectorParams(
                     size=1024,
                     distance=models.Distance.COSINE,
                     on_disk=True,
-                ),
+                )
+                },
                 quantization_config=models.BinaryQuantization(
                     binary=models.BinaryQuantizationConfig(always_ram=True),
                 ),
+                sparse_vectors_config={
+                    "text-sparse": models.SparseVectorParams(
+                        index=models.SparseIndexParams(
+                            on_disk=False,
+                        )
+                    )
+                },
+                
             )
 
     def process_document(self, pdf_body, document_id, regulation, file_url):
@@ -67,12 +77,15 @@ class EmbeddingService:
     def split_into_nodes(self, document):
         if not document:
             raise ValueError("Document is not loaded. Please load a document before splitting.")
+
         return self.splitter.get_nodes_from_documents([document])
 
     def vectorize_and_store_embeddings(self, document_id, regulation, file_url):
         if not self.nodes:
             raise ValueError("No node to process. Please split a document before vectorizing.")
         for node in self.nodes:
+            node.set_content(node.get_content().replace('\n', " "))
+
             metadata = {
                 'document_id': str(document_id),
                 'regulation_body': regulation,
