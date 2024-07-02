@@ -8,7 +8,6 @@ const envVarsSchema = Joi.object({
     PORT: Joi.number().required(),
     NODE_ENV: Joi.string().valid('development', 'production', 'test').required(),
     MAIN_DATABASE_URL: Joi.string().uri().required(),
-    EMBEDDING_DATABASE_URL: Joi.string().uri().required(),
     STRIPE_SECRET_KEY: Joi.string().required(),
     STRIPE_WEBHOOK_SECRET: Joi.string().required(),
     AUTH0_DOMAIN: Joi.string().uri().required(),
@@ -31,7 +30,6 @@ export const config = {
     env: validatedEnvVars.NODE_ENV,
     database: {
         mainDatabaseUrl: validatedEnvVars.MAIN_DATABASE_URL,
-        embeddingDatabaseUrl: validatedEnvVars.EMBEDDING_DATABASE_URL
     },
     stripe: {
         stripeSecretKey: validatedEnvVars.STRIPE_SECRET_KEY,

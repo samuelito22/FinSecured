@@ -4,6 +4,6 @@ import { validateGetAnswerToSearchQuery } from '../validators/document.validator
 
 const router = Router();
 
-router.post('/answer',validateGetAnswerToSearchQuery, DocumentController.getAnswerToSearchQuery)
+router.post('/answer', validateGetAnswerToSearchQuery, DocumentController.getAnswerToSearchQuery)
 
 export default router;

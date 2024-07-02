@@ -29,9 +29,9 @@ const CitationBlock = ({ citation }: CitationBlockProps): JSX.Element => {
                 <Link
                     href={citation.file_url}
                     target="_blank"
-                    className="text-theme-secondary text-[15px]"
+                    className="text-theme-secondary text-[15px] truncate"
                 >
-                    Citation No. {citation.id}
+                    {citation.file_url}
                 </Link>
                 <div
                     onClick={handleToggle}
