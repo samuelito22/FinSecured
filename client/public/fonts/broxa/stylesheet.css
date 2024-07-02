@@ -1,0 +1,13 @@
+@font-face {
+    font-family: 'Broxa';
+    src: url('Broxa.eot');
+    src: local('Broxa'),
+        url('Broxa.eot?#iefix') format('embedded-opentype'),
+        url('Broxa.woff2') format('woff2'),
+        url('Broxa.woff') format('woff'),
+        url('Broxa.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+

@@ -4,8 +4,14 @@ import morgan from 'morgan';
 import UserRoutesV1 from "./modules/user/v1/routes"
 import DocumentRoutesV1 from "./modules/document/v1/routes"
 import { config } from './shared/config';
+import cors from "cors"
 
 const app = express();
+
+app.use(cors({
+  origin: ['http://localhost:3000'],
+  credentials: true 
+}));
 
 // Middleware
 app.use((req, res, next) => {

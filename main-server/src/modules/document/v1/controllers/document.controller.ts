@@ -18,8 +18,8 @@ export const getAnswerToSearchQuery = async (req: Request, res: Response) => {
                 }
             }
         );
-        
-        return sendSuccessResponse(res, 200, `Query successfully answered.`, { answer: response.data.answer, source: response.data.source });
+
+        return sendSuccessResponse(res, 200, `Query successfully answered.`, { ...response.data.data });
 
 
     } catch (error:any) {

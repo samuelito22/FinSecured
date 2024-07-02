@@ -15,7 +15,7 @@ from llama_index.core import VectorStoreIndex, Document
 from llama_index.core.node_parser import SemanticSplitterNodeParser
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.vector_stores.qdrant import QdrantVectorStore
-from regulatory_scraper.config import PGVECTOR_CONNECTION
+from regulatory_scraper.config import PGVECTOR_CONNECTION, QDRANT_URL
 from regulatory_scraper.utils import extract_text_with_pymupdf, SafeSemanticSplitter
 
 class EmbeddingService:
@@ -33,7 +33,7 @@ class EmbeddingService:
             safety_chunk_size=1024,
             safety_chunk_overlap=80
         )
-        self.qdrant_client = QdrantClient(host="localhost", port=6333)
+        self.qdrant_client = QdrantClient(url=QDRANT_URL)
         self.vector_store = QdrantVectorStore(client=self.qdrant_client, collection_name=self.collection_name, enable_hybrid=True)
         self.vector_index = VectorStoreIndex.from_vector_store(self.vector_store, self.embed_model)
 

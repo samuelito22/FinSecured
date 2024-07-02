@@ -10,5 +10,7 @@ class BaseConfig():
     OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', None)
 
     COHERE_API_KEY = os.getenv('COHERE_API_KEY', None)
+
+    QDRANT_URL = os.getenv('QDRANT_URL', None)
     
     

@@ -29,7 +29,7 @@ export const handleStripeWebhook = async (request: Request, response: Response) 
             case 'checkout.session.completed':
                 const sessionData = event.data.object as Stripe.Checkout.Session;
 
-                let customer = await retrieveOrRegisterCustomer(sessionData);
+                const customer = await retrieveOrRegisterCustomer(sessionData);
 
                 if (!customer) {
                     console.error('Customer retrieval or registration failed');
@@ -123,7 +123,7 @@ export const handleStripeWebhook = async (request: Request, response: Response) 
 };
 
 async function retrieveOrRegisterCustomer(sessionData: Stripe.Checkout.Session): Promise<Stripe.Customer | null> {
-    let customerId = sessionData.customer as string;
+    const customerId = sessionData.customer as string;
     if (!customerId && sessionData.customer_details?.email) {
         try {
             const newCustomer = await StripeServices.createCustomer(sessionData.customer_details.email);

@@ -4,11 +4,6 @@ import os
 AWS_ACCESS_KEY = os.getenv('AWS_ACCESS_KEY')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 
-# Mailer Configuration
-MAILERSEND_API_KEY = os.getenv('MAILERSEND_API_KEY')
-SENDER_EMAIL = os.getenv('SENDER_EMAIL')
-RECIPIENT_EMAIL = os.getenv('RECIPIENT_EMAIL')
-
 # PostgreSQL - Main Database Configuration
 DB_CONFIG_PSQL_MAIN = {
     'type': 'postgres',
@@ -53,3 +48,5 @@ DB_CONFIG_SQLITE = {
 }
 
 COHERE_API_KEY = os.getenv('COHERE_API_KEY')
+
+QDRANT_URL = os.getenv('QDRANT_URL')

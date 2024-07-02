@@ -1,4 +1,4 @@
-from regulatory_scraper.config import DB_CONFIG_PSQL_MAIN, DB_CONFIG_PSQL_EMBEDDING, DB_CONFIG_SQLITE
+from regulatory_scraper.config import DB_CONFIG_PSQL_MAIN, DB_CONFIG_SQLITE
 from regulatory_scraper.database import DatabaseManager, BasePostgres, BaseSQLite
 from sqlalchemy import text
 import logging
@@ -14,9 +14,6 @@ def setup_database(config):
         # Check which base to use based on the database type
         if config['type'] == 'postgres' and config['db_name'] == 'main_db':
             BasePostgres.metadata.create_all(db_manager.engine)
-        elif config['type'] == 'postgres' and config['db_name'] == 'embedding_db':
-            with db_manager.engine.begin() as conn:
-                conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector;"))
         elif config['type'] == 'sqlite':
             BaseSQLite.metadata.create_all(db_manager.engine)
         else:
@@ -34,5 +31,4 @@ def setup_database(config):
 
 if __name__ == '__main__':
     setup_database(DB_CONFIG_PSQL_MAIN)
-    setup_database(DB_CONFIG_PSQL_EMBEDDING)
     setup_database(DB_CONFIG_SQLITE)
