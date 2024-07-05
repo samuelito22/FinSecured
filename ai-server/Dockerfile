@@ -16,7 +16,7 @@ WORKDIR /app
 COPY requirements.txt .
 
 # Install the Python dependencies
-RUN pip install -r requirements.txt
+RUN pip install --cache-dir=/home/user/tmp -r requirements.txt
 
 # Copy the application code to the working directory
 COPY . .
