@@ -11,3 +11,5 @@ env__/
 app/db.sqlite3
 .env__
 *.sqlite3
+
+.vercel
