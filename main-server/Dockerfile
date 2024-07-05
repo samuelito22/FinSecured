@@ -1,37 +1,33 @@
-# Stage 1: Build the application
-FROM node:alpine as builder
+# Stage 1: Build
+FROM node:20.13.1-alpine as builder
 
-# Set the working directory
+# Set working directory
 WORKDIR /opt/app
 
-# Copy package.json and yarn.lock files
+# Install dependencies
 COPY package.json yarn.lock ./
-
-# Install all dependencies
 RUN yarn install --frozen-lockfile
 
-# Copy the rest of the application
+# Copy the rest of the application code
 COPY . .
 
 # Build the application
 RUN yarn build
 
-# Stage 2: Setup the production environment
-FROM node:alpine
+# Stage 2: Production Environment
+FROM node:20.13.1-alpine as production
 
-# Set the working directory
+# Set working directory
 WORKDIR /opt/app
 
-# Copy package.json and yarn.lock files
+# Only copy over the built artifacts and necessary files
+COPY --from=builder /opt/app/dist ./dist
 COPY package.json yarn.lock ./
 
 # Install only production dependencies
-RUN yarn install --frozen-lockfile --production
+RUN yarn install --production
 
-# Copy built assets from the builder stage
-COPY --from=builder /opt/app/dist ./dist
-
-# Setup environment variables
+# Environment Variables
 ARG NODE_ENV
 ARG CORS_ORIGIN
 ARG MAIN_DATABASE_URL
@@ -54,8 +50,6 @@ ENV NODE_ENV=${NODE_ENV} \
     PORT=${PORT} \
     AI_API_URL=${AI_API_URL}
 
-# Expose the application port
+# Expose port and define command
 EXPOSE ${PORT}
-
-# Command to run the application
 CMD ["node", "dist/index.js"]
