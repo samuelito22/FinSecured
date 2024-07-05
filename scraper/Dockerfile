@@ -1,5 +1,5 @@
 # Use Ubuntu 24.04 as the base image
-FROM ubuntu:24.04
+FROM python:3.11-slim
 
 # Set working directory in the Docker image
 WORKDIR /app
@@ -23,23 +23,28 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt /app/
 RUN python3 -m venv venv \
  && . venv/bin/activate \
- && python -m spacy download en_core_web_sm \
- && pip3 install -r requirements.txt \
- && curl -fsSL https://ollama.com/install.sh | sh \
- && ollama pull llama3 
+ && pip3 install -r requirements.txt 
+
 # Copy the rest of the application
 COPY . /app
 
 # Set environment variables
-ENV AWS_ACCESS_KEY=AKIA2UC3E5PLSMW37JVG \
-    AWS_SECRET_ACCESS_KEY=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 \
-    MAILERSEND_API_KEY=mlsn.2b5f4cedea8238f179dac85c277fab2e49ca37f5ea02888d5054a3b4441d8fbc \
-    SENDER_EMAIL=impex.compliance@outlook.com \
-    RECIPIENT_EMAIL=impex.compliance@outlook.com \
-    DB_PSQL_HOST=finsecured-db \
-    DB_PSQL_PORT=5432 \
-    DB_PSQL_USER=postgres \
-    DB_PSQL_PASSWORD=20032001Orte
+ARG AWS_ACCESS_KEY
+ARG AWS_SECRET_ACCESS_KEY
+ARG COHERE_API_KEY
+ARG S3_BUCKET_NAME
+ARG QDRANT_URL
+ARG MAIN_DATABASE_URL
+ARG DB_PSQL_USER
+ARG DB_PSQL_PASSWORD
+
+# Set environment variables from ARGs
+ENV AWS_ACCESS_KEY=${AWS_ACCESS_KEY} 
+ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} 
+ENV COHERE_API_KEY=${COHERE_API_KEY} 
+ENV S3_BUCKET_NAME=${S3_BUCKET_NAME} 
+ENV QDRANT_URL=${QDRANT_URL}
+ENV MAIN_DATABASE_URL=${MAIN_DATABASE_URL}
 
 # Setup the database and make the start script executable
 RUN chmod +x /app/start.sh \

@@ -12,7 +12,9 @@ const envVarsSchema = Joi.object({
     STRIPE_WEBHOOK_SECRET: Joi.string().required(),
     AUTH0_DOMAIN: Joi.string().uri().required(),
     AUTH0_API_AUDIENCE: Joi.string().uri().required(),
-    FINSECURED_API_KEY: Joi.string().required()
+    FINSECURED_API_KEY: Joi.string().required(),
+    CORS_ORIGIN: Joi.string().required(),
+    AI_API_URL: Joi.string().required()
 }).unknown(true);  // Allows for other non-specified env variables
 
 // Validate the environment variables
@@ -28,6 +30,8 @@ console.log('All required configurations are present.');
 export const config = {
     port: validatedEnvVars.PORT,
     env: validatedEnvVars.NODE_ENV,
+    corsOrigin: validatedEnvVars.CORS_ORIGIN,
+    aiApiUrl: validatedEnvVars.AI_API_URL,
     database: {
         mainDatabaseUrl: validatedEnvVars.MAIN_DATABASE_URL,
     },

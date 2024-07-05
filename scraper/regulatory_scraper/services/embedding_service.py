@@ -17,6 +17,7 @@ from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.vector_stores.qdrant import QdrantVectorStore
 from regulatory_scraper.config import PGVECTOR_CONNECTION, QDRANT_URL
 from regulatory_scraper.utils import extract_text_with_pymupdf, SafeSemanticSplitter
+from llama_index.vector_stores.types import ExactMatchFilter, MetadataFilters
 
 class EmbeddingService:
     def __init__(self, collection_name):
@@ -104,10 +105,22 @@ class EmbeddingService:
         self.document = None
         self.nodes = []
 
-    def delete_document_embeddings(self, document_id):
-        document_id_str = str(document_id)
-        return self.vector_store.delete(metadata={'document_id': document_id_str})
-
-    def delete_documents_embeddings(self, document_ids):
+    def delete_document_embeddings(self, document_ids):
+        # Ensure document_ids is always a list, even if a single ID is provided
+        if not isinstance(document_ids, list):
+            document_ids = [document_ids]
+        
+        # Convert all document IDs to strings
         document_ids_str = [str(document_id) for document_id in document_ids]
-        return self.vector_store.delete({'metadata.document_id': {'$in': document_ids_str}})
+
+        # Prepare the filter for document IDs
+        filters = MetadataFilters(
+            filters=[ExactMatchFilter(key="document", value=document_id) for document_id in document_ids_str]
+        )
+        
+        # Retrieve nodes to be deleted
+        nodes = self.vector_store.get_nodes(filters=filters)
+
+        # Delete the nodes and return the result
+        return self.vector_store.delete_nodes([node.id for node in nodes])
+

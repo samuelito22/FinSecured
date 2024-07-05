@@ -1,4 +1,3 @@
-import express from 'express';
 import jwks from 'jwks-rsa';
 import { expressjwt as jwt, Params } from "express-jwt";
 import { config } from '../config';

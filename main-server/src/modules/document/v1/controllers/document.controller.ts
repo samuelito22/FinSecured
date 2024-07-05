@@ -6,15 +6,15 @@ import { config } from "@/shared/config";
 export const getAnswerToSearchQuery = async (req: Request, res: Response) => {
     const { query, regulation } = req.body;
     try {
-        const response = await axios.post('http://localhost:8000/documents/answer', 
+        const response = await axios.post(`${config.aiApiUrl}/api/v1/documents/answer`, 
             { 
                 query,
                 regulation
             },
             {
                 headers: {
-                    'finsecured_api_key': config.apiKey.finsecured, 
-                    'Content-Type': 'application/json'
+                    'x-api-key': config.apiKey.finsecured, 
+                    'Content-Type': 'application/json',
                 }
             }
         );

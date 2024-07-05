@@ -1,15 +1,20 @@
-FROM node:12-alpine
+FROM node:20.13.1-bookworm-slim
 
 WORKDIR /opt/app
 
 ENV NODE_ENV production
 
-COPY package*.json ./
+COPY package.json yarn.lock ./
 
-RUN npm ci 
+RUN yarn install --frozen-lockfile
 
 COPY . /opt/app
 
-RUN npm install --dev && npm run build
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 
-CMD [ "npm", "start" ]
+RUN yarn install --production=false && yarn build
+
+EXPOSE 3000
+
+CMD [ "yarn", "start" ]

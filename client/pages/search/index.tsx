@@ -12,10 +12,11 @@ import { Seperator } from "@components/seperator";
 import { TrafficCone } from "@components/svg";
 import clsx from "clsx";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 const ErrorBody = (): React.JSX.Element => {
     return (
-        <div className="flex-1 flex flex-col justify-center items-center w-full h-full">
+        <div className="flex-1 flex flex-col justify-center items-center w-full h-full min-h-[300px]">
             <TrafficCone className="size-14 fill-gray-500" />
             <div className="mt-5 flex flex-col space-y-3 text-center max-w-lg">
                 <h1 className="font-bold text-base">Something Went Wrong</h1>
@@ -36,13 +37,16 @@ const ErrorBody = (): React.JSX.Element => {
 
 const Search: React.FC = (): React.JSX.Element => {
     const searchResponseMutation = useSearchResponse();
+    const { query } = useRouter();
 
     const handleSearch = (query: string, regulation: RegulationEnum) => {
-        searchResponseMutation.mutate({ data: { query, regulation } });
+        if (query.trim().length > 0)
+            searchResponseMutation.mutate({ data: { query, regulation } });
     };
 
     const isLoading =
-        searchResponseMutation.isPending || searchResponseMutation.isIdle;
+        searchResponseMutation.isPending &&
+        !!(typeof query.q === "string" && query.q.trim().length > 0);
 
     return (
         <MainLayout>
@@ -52,7 +56,10 @@ const Search: React.FC = (): React.JSX.Element => {
                         <SearchInput handleSearch={handleSearch} />
                     </div>
                 </div>
-                {searchResponseMutation.isError && <ErrorBody />}
+                {(searchResponseMutation.isError ||
+                    (!isLoading && !searchResponseMutation.data)) && (
+                    <ErrorBody />
+                )}
                 <div className="flex flex-col items-center max-w-4xl mx-auto mt-5 w-full">
                     <SearchAnswers
                         isLoading={isLoading}

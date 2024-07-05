@@ -6,45 +6,31 @@ services:
       args:
         - PORT=4000
         - AI_API_URL=http://finsecured-ai-server:5000
-        - NODE_ENV=development
-        - CORS_ORIGIN=*
+        - NODE_ENV=production
+        - CORS_ORIGIN=http://localhost:80 
         - MAIN_DATABASE_URL=${MAIN_DATABASE_URL}
         - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
         - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
         - AUTH0_DOMAIN=${AUTH0_DOMAIN}
         - AUTH0_API_AUDIENCE=${AUTH0_API_AUDIENCE}
         - FINSECURED_API_KEY=${FINSECURED_API_KEY}
-    container_name: "finsecured-server"
-    depends_on:
-      - finsecured-postgres
+    container_name: "server"
     networks:
       - net
-      
-  scraper:
-    build:
-      context: ./scraper
-      dockerfile: Dockerfile
-      args:
-        - MAIN_DATABASE_URL=${MAIN_DATABASE_URL}
-        - COHERE_API_KEY=${COHERE_API_KEY}
-        - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-        - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
-        - QDRANT_URL=${QDRANT_URL}
-        - S3_BUCKET_NAME=${S3_BUCKET_NAME}
 
   finsecured-ai-server:
     build:
       context: ./ai-server
       dockerfile: Dockerfile
       args:
-        - CORS_ORIGIN=*
+        - CORS_ORIGIN=http://finsecured-server:5000
         - OPENAI_API_KEY=${OPENAI_API_KEY}
         - COHERE_API_KEY=${COHERE_API_KEY}
         - FINSECURED_API_KEY=${FINSECURED_API_KEY}
         - QDRANT_URL=${QDRANT_URL}
         - PORT=5000
         - WORKERS=1
-    container_name: "finsecured-ai-server"
+    container_name: "ai-server"
     networks:
       - net
 
@@ -54,7 +40,7 @@ services:
       dockerfile: Dockerfile
       args:
         - NEXT_PUBLIC_API_URL=http://localhost:80 
-    container_name: "finsecured-client"
+    container_name: "client"
     depends_on:
       - finsecured-server
       - finsecured-ai-server
@@ -74,20 +60,6 @@ services:
     ports:
       - "80:80"
       - "443:443"
-
-  finsecured-postgres:
-    image: postgres:16
-    container_name: "finsecured-postgres"
-    environment:
-      - POSTGRES_DB=main_db
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=20032001Orte
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    networks:
-      - net
 
 volumes:
   postgres-data:

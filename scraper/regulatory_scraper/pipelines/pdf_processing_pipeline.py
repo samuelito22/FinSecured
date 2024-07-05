@@ -64,7 +64,7 @@ class PDFProcessingPipeline:
                         document_entry = self.document_service.get_document(session, file_url=file_url)
                         if document_entry:
                             spider.logger.debug(f"Deleting embeddings for document ID: {document_entry.id}")
-                            self.embedding_service.delete_document_embeddings(document_entry.id)
+                            self.embedding_service.delete_document_embeddings([document_entry.id])
                             spider.logger.debug("Embeddings deleted successfully.")
 
                             spider.logger.debug("Updating checksum in the database...")

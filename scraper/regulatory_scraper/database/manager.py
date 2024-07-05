@@ -33,8 +33,7 @@ class DatabaseManager:
         if db_type == 'sqlite':
             return f"sqlite:///{self.configuration['path']}"
         elif db_type == 'postgres':
-            return f"postgresql://{self.configuration['user']}:{self.configuration['password']}@" \
-                   f"{self.configuration['host']}:{self.configuration['port']}/{self.configuration['db_name']}"
+            return self.configuration['path']
         else:
             raise ValueError(f"Unsupported database type: {db_type}")
 

@@ -18,10 +18,17 @@ export const SearchInput = ({
     const [inputValue, setInputValue] = useState("");
 
     useEffect(() => {
-        const _query = query.q as string;
-        if (pathname === "/search" && _query && isReady) {
+        // Ensuring the query parameter 'q' is defined and a string before trimming
+        const _query = query.q;
+        if (
+            pathname === "/search" &&
+            _query &&
+            typeof _query === "string" &&
+            isReady
+        ) {
             setInputValue(_query);
-            if (handleSearch) handleSearch(_query, RegulationEnum["FCA"]);
+            if (handleSearch)
+                handleSearch(_query.trim(), RegulationEnum["FCA"]);
         }
     }, [query, pathname, isReady]);
 
@@ -29,7 +36,7 @@ export const SearchInput = ({
         event.preventDefault();
 
         const result = getSearchResponseInputSchema.safeParse({
-            query: inputValue,
+            query: inputValue.trim(),
             regulation: RegulationEnum["FCA"],
         });
 
@@ -39,7 +46,7 @@ export const SearchInput = ({
         }
 
         push(
-            `/search?q=${encodeURIComponent(inputValue)}&regulation=${
+            `/search?q=${encodeURIComponent(inputValue.trim())}&regulation=${
                 RegulationEnum["FCA"]
             }`,
         );

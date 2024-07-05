@@ -1,0 +1,11 @@
+  scraper:
+    build:
+      context: ./scraper
+      dockerfile: Dockerfile
+      args:
+        - MAIN_DATABASE_URL=${MAIN_DATABASE_URL}
+        - COHERE_API_KEY=${COHERE_API_KEY}
+        - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+        - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
+        - QDRANT_URL=${QDRANT_URL}
+        - S3_BUCKET_NAME=${S3_BUCKET_NAME}

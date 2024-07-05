@@ -1,10 +1,7 @@
 from ..common.config import BaseConfig
 
 from qdrant_client import QdrantClient
-qdrant_client = QdrantClient(host="localhost", port=6333)
-
-from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-embed_model = HuggingFaceEmbedding(model_name="thenlper/gte-large")
+qdrant_client = QdrantClient(url=BaseConfig.QDRANT_URL, api_key=BaseConfig.QDRANT_API_KEY)
 
 import cohere
 co = cohere.Client(api_key=BaseConfig.COHERE_API_KEY)

@@ -4,7 +4,7 @@ from typing import Dict, List
 from llama_index.vector_stores.qdrant import QdrantVectorStore
 from llama_index.core import VectorStoreIndex
 from llama_index.core.schema import Node
-from . import co, embed_model
+from . import co
 from . import qdrant_client
 
 class QdrantRetriever:
@@ -18,6 +18,10 @@ class QdrantRetriever:
                                 detail=f"Failed to initialize Qdrant Vector Store: {str(e)}")
 
     async def retrieve_nodes(self, query: str) -> Dict[str, List[Node]]:
+        # Check if the embedding model is loaded before proceeding
+        if embed_model is None:
+            raise HTTPException(status_code=503, detail="Model is not loaded yet, try again later.")
+
         try:
             index_retriever = VectorStoreIndex.from_vector_store(self.vector_store, embed_model).as_retriever(similarity_top_k=10, sparse_top_k=10, vector_store_query_mode="hybrid")
             results = index_retriever.retrieve(query)

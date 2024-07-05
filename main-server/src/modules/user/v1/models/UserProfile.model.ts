@@ -1,4 +1,4 @@
-import { Table, Column, Model, DataType, PrimaryKey, HasMany, CreatedAt, UpdatedAt, ForeignKey, BelongsTo, Index } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, PrimaryKey, CreatedAt, UpdatedAt, ForeignKey, BelongsTo, Index } from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 import { User } from './User.model';
 

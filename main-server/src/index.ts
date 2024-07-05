@@ -1,15 +1,6 @@
-import { register } from 'tsconfig-paths'
-import tsConfig from './tsconfig.json'
-
-const baseUrl = './'
-const cleanup = register({
-  baseUrl,
-  paths: tsConfig.compilerOptions.paths,
-})
-
-import app from './src/app';
-import { config } from './src/shared/config';
-import sequelize from './src/shared/db/sequelize.config';
+import app from './app';
+import { config } from './shared/config';
+import sequelize from './shared/db/sequelize.config';
 
 const PORT = config.port || 3000;
 
@@ -57,5 +48,4 @@ process.on('SIGTERM', () => {
     server.close();
   }
 
-  cleanup()
 });

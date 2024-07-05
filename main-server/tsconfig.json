@@ -5,6 +5,8 @@
     "emitDecoratorMetadata": true,
     "module": "nodenext",
     "baseUrl": ".",
+    "outDir": "./dist",
+    "rootDir": "./src",
     "paths": {
       "@/*": ["./src/*"]
     },
@@ -16,6 +18,6 @@
     "strictPropertyInitialization": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*", "./index.ts"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules"]
 }

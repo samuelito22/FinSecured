@@ -69,7 +69,7 @@ class CleanupDatabase:
 
     def clean_up_vectors(self, session: Session):
         if self.document_ids:
-            num_deleted = self.embedding_service.delete_documents_embeddings(self.document_ids)
+            num_deleted = self.embedding_service.delete_document_embeddings(self.document_ids)
             logging.info(f"Deleted {num_deleted} vectors from embedding service.")
 
     def delete_from_s3(self):
