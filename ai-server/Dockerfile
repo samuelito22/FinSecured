@@ -1,24 +1,22 @@
-# Use a slim Python image
-FROM python:3.11-slim
+# Use Python Alpine image for a smaller base
+FROM python:alpine
 
-# Set environment variables
-ENV PIP_DEFAULT_TIMEOUT=100 \
-    PYTHONUNBUFFERED=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1 \
-    PIP_NO_CACHE_DIR=1
+# Set the working directory
+WORKDIR /code
 
-WORKDIR /app
+RUN apk add --no-cache rust cargo
 
-# Copy the requirements file to the container
-COPY requirements.txt .
+# Copy the requirements file to the working directory
+COPY ./requirements.txt .
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Upgrade pip and install Python packages defined in requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application
-COPY . .
+# Copy the application code to the working directory
+COPY ./app ./app
 
-# Set environment variables from build arguments
+# Use ARG to define variables that will be used only during the build
 ARG CORS_ORIGIN
 ARG OPENAI_API_KEY
 ARG COHERE_API_KEY
@@ -26,6 +24,8 @@ ARG FINSECURED_API_KEY
 ARG QDRANT_URL
 ARG PORT
 ARG WORKERS
+
+# Set environment variables from the build arguments
 ENV CORS_ORIGIN=${CORS_ORIGIN} \
     OPENAI_API_KEY=${OPENAI_API_KEY} \
     COHERE_API_KEY=${COHERE_API_KEY} \
@@ -34,12 +34,7 @@ ENV CORS_ORIGIN=${CORS_ORIGIN} \
     PORT=${PORT} \
     WORKERS=${WORKERS}
 
-# Expose the application port
-EXPOSE $PORT
+# Expose the port defined by the PORT environment variable
+EXPOSE ${PORT}
 
-# Run the FastAPI application using Gunicorn with Uvicorn workers
 CMD gunicorn app:app --worker-class uvicorn.workers.UvicornWorker --workers $WORKERS --bind 0.0.0.0:$PORT --timeout 300
-
-# Optionally, add a non-root user for security
-# RUN addgroup --system appgroup && adduser --system --no-create-home --ingroup appgroup appuser
-# USER appuser

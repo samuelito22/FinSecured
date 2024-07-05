@@ -87,6 +87,7 @@ class PDFProcessingPipeline:
                     self.embedding_service.process_document(response_body, document_entry.id, FCA, file_url)
                     spider.logger.debug("Document embeddings processed and stored.")
             
+            """
             # Uploading to S3 outside the session scope to prevent holding the transaction open
             spider.logger.debug("Uploading PDF to S3...")
             self.s3_client.put_object(
@@ -100,6 +101,7 @@ class PDFProcessingPipeline:
                 }
             )
             spider.logger.info(f"PDF file {file_path} uploaded to S3 successfully.")
+            """
                 
         except SQLAlchemyError as e:
             spider.logger.error(f"Database operation failed for URL {file_url}: {str(e)}")

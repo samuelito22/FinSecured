@@ -1,5 +1,3 @@
-from .services import *
-
 from fastapi import FastAPI, Request, Response, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 import json
@@ -8,11 +6,11 @@ from starlette.responses import JSONResponse, StreamingResponse
 from typing import Callable
 from fastapi.exceptions import RequestValidationError
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-from .common.config import BaseConfig
+from .config import BaseConfig
 from fastapi.concurrency import run_in_threadpool
 
 
-from .api.restx_config import init_app 
+from .restx_config import init_app 
 
 app = FastAPI()
 

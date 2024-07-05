@@ -1,5 +1,5 @@
 from fastapi import Request, HTTPException, Depends
-from ...common.config import BaseConfig
+from ..config import BaseConfig
 
 async def require_secret_key(request: Request):
     api_key: str = request.headers.get("X-API-Key", "")

@@ -1,4 +1,4 @@
-from ..common.config import BaseConfig
+from ..config import BaseConfig
 
 from qdrant_client import QdrantClient
 qdrant_client = QdrantClient(url=BaseConfig.QDRANT_URL, api_key=BaseConfig.QDRANT_API_KEY)
