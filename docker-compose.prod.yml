@@ -16,6 +16,8 @@ services:
         - FINSECURED_API_KEY=${FINSECURED_API_KEY}
     image: sedorodion/finsecured-server:latest
     container_name: "server"
+    depends_on:
+      - finsecured-postgres
     networks:
       - net
 
@@ -64,6 +66,24 @@ services:
     ports:
       - "80:80"
       - "443:443"
+
+  finsecured-postgres:
+    image: postgres:16
+    container_name: "finsecured-postgres"
+    environment:
+      - POSTGRES_DB=main_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=20032001Orte
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - net
+
+volumes:
+  postgres-data:
+    driver: local
 
 networks:
   net:
